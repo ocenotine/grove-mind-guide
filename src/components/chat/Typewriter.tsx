@@ -1,68 +1,78 @@
-
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 interface TypewriterProps {
   text: string;
   delay?: number;
   onComplete?: () => void;
-  className?: string;
   cursor?: boolean;
-  soundEnabled?: boolean;
 }
 
-const Typewriter = ({ 
-  text, 
-  delay = 20, 
-  onComplete, 
-  className = '',
-  cursor = false,
-  soundEnabled = false
-}: TypewriterProps) => {
+const Typewriter: React.FC<TypewriterProps> = ({
+  text,
+  delay = 30,
+  onComplete,
+  cursor = false
+}) => {
   const [currentText, setCurrentText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  
+  // Keep a ref to the sound element
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  
+  // Create the audio element for typing sound
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const audio = new Audio('/sounds/type.mp3');
+      audio.volume = 0.2;
+      audioRef.current = audio;
+    }
+    
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+  
+  // Play sound function with throttling
+  const playTypeSound = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(error => {
+        console.info('Audio play failed:', error);
+      });
+    }
+  }, []);
 
   useEffect(() => {
-    // Reset state when text prop changes
-    setCurrentText('');
-    setCurrentIndex(0);
-  }, [text]);
-
-  useEffect(() => {
-    if (currentIndex < text.length) {
+    if (currentIndex < text.length && !isPaused) {
       const timeout = setTimeout(() => {
-        // Get the next character
-        const nextChar = text[currentIndex];
-        setCurrentText(prevText => prevText + nextChar);
+        setCurrentText(prevText => prevText + text[currentIndex]);
         setCurrentIndex(prevIndex => prevIndex + 1);
         
-        // Play typing sound if enabled (for special characters, simulate "thinking")
-        if (soundEnabled && nextChar && nextChar.trim() !== '') {
-          const audio = new Audio('/sounds/type.mp3');
-          audio.volume = 0.05;
-          audio.playbackRate = 2.5;
-          audio.play().catch(() => {}); // Ignore errors (browsers may block autoplay)
+        // Play sound for certain characters
+        if (!/[.,;:!?\s]/.test(text[currentIndex])) {
+          playTypeSound();
         }
-        
-        // Pause briefly at punctuation
-        if (['.', '!', '?', ',', ';', ':'].includes(nextChar)) {
-          setIsPaused(true);
-          setTimeout(() => setIsPaused(false), delay * 10);
-        }
-      }, isPaused ? delay * 10 : delay);
+      }, delay);
       
       return () => clearTimeout(timeout);
-    } else if (onComplete) {
+    } else if (currentIndex >= text.length && onComplete) {
       onComplete();
     }
-  }, [currentIndex, delay, text, onComplete, isPaused, soundEnabled]);
+  }, [currentIndex, delay, isPaused, onComplete, playTypeSound, text]);
+
+  // Toggle pause/resume on click
+  const togglePause = () => {
+    setIsPaused(!isPaused);
+  };
 
   return (
-    <span className={className}>
+    <span onClick={togglePause} style={{ cursor: 'pointer' }}>
       {currentText}
-      {cursor && currentIndex < text.length && (
-        <span className="inline-block w-1 h-4 bg-primary ml-0.5 animate-pulse"></span>
-      )}
+      {currentIndex < text.length && cursor && <span className="animate-pulse">|</span>}
     </span>
   );
 };
