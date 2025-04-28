@@ -1,128 +1,150 @@
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
-import { Button } from '@/components/ui/button';
 import { PageTransition } from '@/components/animations/PageTransition';
-import ProfileHeader from '@/components/profile/ProfileHeader';
-import EditProfileForm from '@/components/profile/EditProfileForm';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import EmailPreferences from '@/components/profile/EmailPreferences';
-import SupportPanel from '@/components/profile/SupportPanel';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
-import { toast } from '@/components/ui/use-toast';
-import { User, LogOut, HelpCircle, Mail, Settings } from 'lucide-react';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import ProfileSettings from '@/components/profile/ProfileSettings';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
+import ProfileStats from '@/components/profile/ProfileStats';
+import { Settings, Lock, Bell, Key } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { getOpenRouterApiKey } from '@/utils/openRouterUtils';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-const ProfilePage = () => {
-  const { user, logout } = useAuthStore();
-  const navigate = useNavigate();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+export default function ProfilePage() {
+  const { user } = useAuthStore();
+  const [apiKey, setApiKey] = useState('');
+  
+  useEffect(() => {
+    setApiKey(getOpenRouterApiKey());
+  }, []);
 
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
-
-  const handleLogout = async () => {
-    try {
-      setIsLoggingOut(true);
-      
-      // Force logout to ensure complete session clearing
-      await logout();
-      
-      toast({
-        title: 'Logged out successfully',
-        description: 'You have been logged out of your account',
-        variant: 'default',
-      });
-      
-      // Redirect to landing page
-      navigate('/landing');
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast({
-        title: 'Error logging out',
-        description: 'Please try again',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoggingOut(false);
-    }
+  // Function to format email for display
+  const formatEmail = (email: string) => {
+    if (!email) return '';
+    const [username, domain] = email.split('@');
+    if (username.length <= 2) return email;
+    return `${username.substring(0, 2)}${'*'.repeat(username.length - 2)}@${domain}`;
   };
 
   return (
     <MainLayout>
       <PageTransition>
-        <div className="space-y-8 mb-10">
-          <ProfileHeader user={user} />
-          
-          <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="mb-8">
-              <TabsTrigger value="profile" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                <span>Profile</span>
-              </TabsTrigger>
-              <TabsTrigger value="notifications" className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                <span>Notifications</span>
-              </TabsTrigger>
-              <TabsTrigger value="support" className="flex items-center gap-2">
-                <HelpCircle className="h-4 w-4" />
-                <span>Support</span>
-              </TabsTrigger>
-            </TabsList>
+        <div className="container max-w-4xl mx-auto p-6 space-y-8">
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            <Card className="w-full md:w-auto">
+              <CardHeader>
+                <CardTitle>Your Profile</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center text-center space-y-4">
+                <ProfileAvatar user={user} size="xl" />
+                <div>
+                  <h2 className="text-xl font-semibold">{user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}</h2>
+                  <p className="text-muted-foreground text-sm">{formatEmail(user?.email || '')}</p>
+                </div>
+                <Button variant="outline" size="sm">
+                  <Settings className="mr-2 h-4 w-4" /> Edit Profile
+                </Button>
+              </CardContent>
+            </Card>
             
-            <TabsContent value="profile" className="space-y-6">
-              <div className="bg-card rounded-lg border shadow-sm">
-                <EditProfileForm />
-              </div>
+            <div className="w-full space-y-6">
+              <ProfileStats />
               
-              <div className="bg-card rounded-lg border shadow-sm p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-muted-foreground" />
-                  Account Settings
-                </h3>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="gap-2">
-                      <LogOut className="h-4 w-4" />
-                      {isLoggingOut ? 'Logging out...' : 'Log out'}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        You will need to log back in to access your account.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction 
-                        onClick={handleLogout}
-                        disabled={isLoggingOut}
-                      >
-                        {isLoggingOut ? 'Logging out...' : 'Log out'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="notifications">
-              <EmailPreferences />
-            </TabsContent>
-            
-            <TabsContent value="support">
-              <SupportPanel />
-            </TabsContent>
-          </Tabs>
+              <Tabs defaultValue="general" className="w-full">
+                <TabsList className="grid grid-cols-3 mb-4">
+                  <TabsTrigger value="general">General</TabsTrigger>
+                  <TabsTrigger value="security">Security</TabsTrigger>
+                  <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="general">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">General Settings</CardTitle>
+                      <CardDescription>Manage your account preferences</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <ProfileSettings />
+                      <div className="space-y-2">
+                        <Label htmlFor="api-key">OpenRouter API Key</Label>
+                        <Input 
+                          id="api-key"
+                          value={apiKey}
+                          readOnly
+                          className="font-mono bg-muted"
+                        />
+                        <p className="text-xs text-muted-foreground">API key is used for AI features like document analysis and chat.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="security">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Lock className="h-4 w-4" /> Security Settings
+                      </CardTitle>
+                      <CardDescription>Manage your account security</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="font-medium mb-2">Password</h3>
+                          <Button variant="outline" size="sm">Change Password</Button>
+                        </div>
+                        <div>
+                          <h3 className="font-medium mb-2">Two-Factor Authentication</h3>
+                          <Button variant="outline" size="sm">Enable 2FA</Button>
+                        </div>
+                        <div>
+                          <h3 className="font-medium mb-2">API Keys</h3>
+                          <Button variant="outline" size="sm">
+                            <Key className="mr-2 h-4 w-4" /> Manage API Keys
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="notifications">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Bell className="h-4 w-4" /> Notification Settings
+                      </CardTitle>
+                      <CardDescription>Manage how you receive notifications</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h3 className="font-medium">Email Notifications</h3>
+                            <p className="text-sm text-muted-foreground">Receive notifications via email</p>
+                          </div>
+                          <div>ON</div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h3 className="font-medium">Push Notifications</h3>
+                            <p className="text-sm text-muted-foreground">Receive notifications in-app</p>
+                          </div>
+                          <div>ON</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
         </div>
       </PageTransition>
     </MainLayout>
   );
-};
-
-export default ProfilePage;
+}

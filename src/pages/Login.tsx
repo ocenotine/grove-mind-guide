@@ -7,20 +7,29 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import { PageTransition } from '@/components/animations/PageTransition';
-import { Mail, Lock, ArrowRight, LogIn, Github } from 'lucide-react';
+import { Mail, Lock, ArrowRight, LogIn, Github, ArrowLeft } from 'lucide-react';
 import ParallaxScroll from '@/components/animations/ParallaxScroll';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, loginWithGoogle, isAuthenticated } = useAuthStore();
+  const { login, loginWithGoogle, isAuthenticated, user } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   if (isAuthenticated) {
-    navigate('/dashboard');
+    // Redirect based on account type
+    if (user?.user_metadata?.account_type === 'institution') {
+      navigate('/institution/dashboard');
+    } else {
+      navigate('/dashboard');
+    }
     return null;
   }
+
+  const handleBackToLanding = () => {
+    navigate('/landing');
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +44,7 @@ const Login = () => {
         variant: "default"
       });
       
-      navigate('/dashboard');
+      // Redirect will happen via the isAuthenticated check above on the next render
     } catch (error) {
       console.error("Login error:", error);
       toast({
@@ -43,7 +52,6 @@ const Login = () => {
         description: error instanceof Error ? error.message : "An unexpected error occurred",
         variant: "destructive"
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -64,6 +72,16 @@ const Login = () => {
   return (
     <PageTransition>
       <div className="min-h-screen flex flex-col bg-background">
+        <div className="p-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBackToLanding}
+            className="hover:bg-muted/50"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </div>
         <div className="flex-1 flex flex-col md:flex-row">
           {/* Left side - Form */}
           <div className="w-full md:w-1/2 p-6 md:p-12 flex flex-col justify-center">
@@ -184,17 +202,18 @@ const Login = () => {
             </div>
           </div>
           
-          {/* Right side - Decoration */}
+          {/* Right side - Decoration with custom image */}
           <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-primary/20 to-primary/30 p-12">
             <div className="h-full flex flex-col justify-center">
               <ParallaxScroll direction="up" speed={0.3}>
                 <div className="text-center">
-                  <h2 className="text-3xl font-bold mb-2">MindGrove</h2>
-                  <p className="text-lg text-muted-foreground mb-6">
-                    Cultivating Smarter Learners, One Streak at a Time!
-                  </p>
+                  <img 
+                    src="//mindgrove.png/d501d0da-a7b8-48c8-82f1-fea9624331d3.png" 
+                    alt="MindGrove AI Research" 
+                    className="mx-auto max-w-full h-auto mb-6"
+                  />
                   
-                  <div className="max-w-sm mx-auto p-6 rounded-lg bg-card/90 backdrop-blur-sm border shadow-lg">
+                  <div className="max-w-sm mx-auto p-6 mt-6 rounded-lg bg-card/90 backdrop-blur-sm border shadow-lg">
                     <p className="text-base font-medium">
                       "MindGrove has transformed my study habits completely. I've gone from struggling to maintain focus to establishing a consistent study streak for over 30 days!"
                     </p>

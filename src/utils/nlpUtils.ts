@@ -1,10 +1,15 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { generateDocumentChatResponse } from '@/utils/openRouterUtils';
+import { 
+  generateDocumentSummary as generateOpenRouterSummary, 
+  generateDocumentChatResponse as generateOpenRouterChatResponse,
+  generateFlashcards as generateOpenRouterFlashcards,
+  generateQuiz as generateOpenRouterQuiz,
+  getOpenRouterApiKey
+} from '@/utils/openRouterUtils';
 
 export const generateSummary = async (documentId: string, text: string) => {
   try {
-    console.log(`Generating summary for document ${documentId}`);
+    console.log(`Generating detailed summary for document ${documentId}`);
     
     if (!text || text.trim().length < 10) {
       console.log('Text is too short for summarization');
@@ -14,60 +19,36 @@ export const generateSummary = async (documentId: string, text: string) => {
       };
     }
 
-    // Get the access token for API request
-    const { data: { session } } = await supabase.auth.getSession();
-    const accessToken = session?.access_token;
-    
-    if (!accessToken) {
-      throw new Error('Authentication required for document processing');
-    }
-
-    // Call OpenRouter API through our wrapper
     try {
-      const response = await fetch('/api/ai/summarize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          documentId,
-          text: text.slice(0, 15000) // Limit text length for API
-        })
-      });
+      // Call OpenRouter API directly
+      const summary = await generateOpenRouterSummary(text);
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API error: ${response.status} - ${errorText}`);
+      // Once we have the summary, save it to the document in Supabase
+      if (documentId) {
+        try {
+          const { error } = await supabase
+            .from('documents')
+            .update({ summary })
+            .eq('id', documentId);
+            
+          if (error) {
+            console.error('Error saving summary to document:', error);
+          } else {
+            console.log('Summary saved successfully to document ID:', documentId);
+          }
+        } catch (dbError) {
+          console.error('Database error when saving summary:', dbError);
+        }
       }
-      
-      const data = await response.json();
-      
-      if (!data.summary) {
-        throw new Error('No summary returned from API');
-      }
-      
-      // Forward the successful result
-      return { 
-        success: true, 
-        summary: data.summary 
-      };
-    } catch (apiError) {
-      console.error('API error for summary:', apiError);
-      
-      // Fallback to direct API call
-      console.log('Falling back to direct API call for summarization');
-      
-      // Use the OpenRouter utils directly as a fallback
-      const { generateDocumentSummary } = await import('@/utils/openRouterUtils');
-      const summary = await generateDocumentSummary(text.slice(0, 15000));
       
       return {
         success: true,
         summary
       };
+    } catch (apiError) {
+      console.error('API error for summary:', apiError);
+      throw apiError;
     }
-    
   } catch (error) {
     console.error('Error generating summary:', error);
     return { 
@@ -94,58 +75,38 @@ export const generateFlashcards = async (documentId: string, text: string) => {
       };
     }
 
-    // Get the access token for API request
-    const { data: { session } } = await supabase.auth.getSession();
-    const accessToken = session?.access_token;
-    
-    if (!accessToken) {
-      throw new Error('Authentication required for document processing');
-    }
-
-    // Call OpenRouter API through our wrapper
     try {
-      const response = await fetch('/api/ai/flashcards', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          documentId,
-          text: text.slice(0, 15000) // Limit text length for API
-        })
-      });
+      // Use the OpenRouter utils directly
+      const flashcards = await generateOpenRouterFlashcards(text);
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API error: ${response.status} - ${errorText}`);
+      // Save flashcards to database if authenticated
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user && documentId) {
+          for (const flashcard of flashcards) {
+            await supabase
+              .from('flashcards')
+              .insert({
+                document_id: documentId,
+                front_content: flashcard.question,
+                back_content: flashcard.answer,
+                user_id: user.id
+              });
+          }
+          console.log(`Saved ${flashcards.length} flashcards to database`);
+        }
+      } catch (dbError) {
+        console.error('Error saving flashcards to database:', dbError);
       }
-      
-      const data = await response.json();
-      
-      if (!Array.isArray(data.flashcards) || data.flashcards.length === 0) {
-        throw new Error('No valid flashcards returned from API');
-      }
-      
-      // Forward the successful result
-      return { 
-        success: true, 
-        flashcards: data.flashcards 
-      };
-    } catch (apiError) {
-      console.error('API error for flashcards:', apiError);
-      
-      // Fallback to direct API call
-      console.log('Falling back to direct API call for flashcard generation');
-      
-      // Use the OpenRouter utils directly as a fallback
-      const { generateFlashcards: generateFlashcardsFromOpenRouter } = await import('@/utils/openRouterUtils');
-      const flashcards = await generateFlashcardsFromOpenRouter(text.slice(0, 15000));
       
       return {
         success: true,
         flashcards
       };
+    } catch (apiError) {
+      console.error('API error for flashcards:', apiError);
+      throw apiError;
     }
   } catch (error) {
     console.error('Error generating flashcards:', error);
@@ -170,7 +131,7 @@ export const chatWithDocument = async (documentId: string, documentText: string,
     }
     
     // Use direct call to OpenRouter for document chat
-    const response = await generateDocumentChatResponse(documentText, userMessage);
+    const response = await generateOpenRouterChatResponse(documentText, userMessage);
     
     return {
       success: true,
@@ -181,6 +142,51 @@ export const chatWithDocument = async (documentId: string, documentText: string,
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to generate a response'
+    };
+  }
+};
+
+// Generate quiz questions
+export const generateQuizQuestions = async (documentId: string, documentText: string, numQuestions = 5, difficulty = 'medium') => {
+  try {
+    console.log(`Generating quiz questions for document ${documentId}`);
+    
+    if (!documentText || documentText.trim().length < 10) {
+      return { 
+        success: false, 
+        error: "Document content is too short to generate quiz questions.",
+        questions: []
+      };
+    }
+
+    // Check if API key exists
+    const apiKey = getOpenRouterApiKey();
+    if (!apiKey) {
+      return {
+        success: false,
+        error: "OpenRouter API key not set. Please set your API key in settings.",
+        questions: []
+      };
+    }
+
+    try {
+      // Use the OpenRouter utils directly
+      const questions = await generateOpenRouterQuiz(documentText, numQuestions, difficulty);
+      
+      return {
+        success: true,
+        questions
+      };
+    } catch (apiError) {
+      console.error('API error for quiz generation:', apiError);
+      throw apiError;
+    }
+  } catch (error) {
+    console.error('Error generating quiz questions:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Failed to generate quiz questions',
+      questions: []
     };
   }
 };

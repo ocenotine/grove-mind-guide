@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import QRCodeGenerator from '@/components/common/QRCodeGenerator';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/use-toast';
 
 const CompanionAppAd: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -16,11 +16,51 @@ const CompanionAppAd: React.FC = () => {
     const checkAdEligibility = async () => {
       if (!user || user.account_type !== 'student') return;
 
-      const now = new Date();
-      const lastPromptShown = user.last_prompt_shown ? new Date(user.last_prompt_shown) : null;
-      
-      if (!lastPromptShown || (now.getTime() - lastPromptShown.getTime()) > 24 * 60 * 60 * 1000) {
-        setIsVisible(true);
+      try {
+        // Check user preferences for last_prompt_shown
+        const { data, error } = await supabase
+          .from('user_preferences')
+          .select('last_prompt_shown')
+          .eq('user_id', user.id)
+          .single();
+          
+        if (error) {
+          if (error.code === 'PGRST116') {
+            // No record exists, create one and show the ad
+            await supabase
+              .from('user_preferences')
+              .insert([{ 
+                user_id: user.id,
+                last_prompt_shown: null
+              }]);
+            setIsVisible(true);
+          } else {
+            console.error('Error checking ad eligibility:', error);
+          }
+          return;
+        }
+        
+        const now = new Date();
+        const lastPromptShown = data.last_prompt_shown ? new Date(data.last_prompt_shown) : null;
+        
+        if (!lastPromptShown || (now.getTime() - lastPromptShown.getTime()) > 24 * 60 * 60 * 1000) {
+          setIsVisible(true);
+        }
+      } catch (error) {
+        console.error('Error checking ad eligibility:', error);
+        
+        // Fallback to localStorage
+        const lastShown = localStorage.getItem(`mindgrove_last_ad_shown_${user.id}`);
+        if (!lastShown) {
+          setIsVisible(true);
+          return;
+        }
+        
+        const now = new Date();
+        const lastShownDate = new Date(lastShown);
+        if ((now.getTime() - lastShownDate.getTime()) > 24 * 60 * 60 * 1000) {
+          setIsVisible(true);
+        }
       }
     };
 
@@ -31,12 +71,10 @@ const CompanionAppAd: React.FC = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
-        .from('profiles')
+      await supabase
+        .from('user_preferences')
         .update({ last_prompt_shown: new Date().toISOString() })
-        .eq('id', user.id);
-
-      if (error) throw error;
+        .eq('user_id', user.id);
       
       setIsVisible(false);
     } catch (error) {

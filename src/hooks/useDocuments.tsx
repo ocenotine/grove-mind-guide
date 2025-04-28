@@ -1,87 +1,112 @@
 
 import { useEffect, useState, useCallback } from 'react';
-import { useDocumentStore } from '@/store/documentStore';
-import { Document } from '@/utils/mockData';
+import { useDocumentStore, Document } from '@/store/documentStore';
 import { useAuthStore } from '@/store/authStore';
-import { getDocumentThumbnail } from '@/utils/documentUtils';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 
 export const useDocuments = () => {
   const { user } = useAuthStore();
   const [searchResults, setSearchResults] = useState<Document[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<number>(Date.now());
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const { 
     documents,
     currentDocument,
-    isLoading,
-    error,
     fetchDocuments,
+    searchDocuments,
     fetchDocumentById,
-    createDocument,
-    uploadDocument,
-    generateSummary,
-    generateFlashcards,
-    searchDocuments
+    addDocument,
+    isLoading
   } = useDocumentStore();
 
-  // Only fetch documents when the hook is first used or when user changes
-  useEffect(() => {
-    if (user?.id) {
-      console.log("Fetching documents for user:", user.id);
-      fetchDocuments();
-    }
-  }, [fetchDocuments, user?.id]);
-
-  const getDocumentById = useCallback(async (id: string): Promise<Document | null> => {
-    if (currentDocument?.id === id) {
-      return currentDocument;
+  // Add refreshDocuments function
+  const refreshDocuments = useCallback(async () => {
+    if (!user?.id) {
+      console.log("Cannot refresh documents: No authenticated user");
+      return;
     }
     
+    setIsRefreshing(true);
     try {
-      await fetchDocumentById(id);
-      return useDocumentStore.getState().currentDocument;
+      await fetchDocuments();
+      setLastRefresh(Date.now());
     } catch (error) {
-      console.error('Error fetching document:', error);
-      return null;
+      console.error("Error refreshing documents:", error);
+      toast({
+        title: "Error refreshing documents",
+        description: "Failed to fetch your latest documents. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRefreshing(false);
     }
-  }, [currentDocument, fetchDocumentById]);
-  
+  }, [user?.id, fetchDocuments]);
+
   const handleSearch = useCallback(async (query: string): Promise<Document[]> => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      return [];
-    }
-    
     setIsSearching(true);
+    
     try {
       const results = searchDocuments(query);
       setSearchResults(results);
-      setIsSearching(false);
       return results;
     } catch (error) {
-      console.error('Error searching documents:', error);
-      setIsSearching(false);
+      console.error("Error searching documents:", error);
+      toast({
+        title: "Search error",
+        description: "An error occurred while searching documents.",
+        variant: "destructive"
+      });
       return [];
+    } finally {
+      setIsSearching(false);
     }
   }, [searchDocuments]);
+  
+  // Set up realtime subscription for document updates
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    const channel = supabase
+      .channel('document-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', 
+          schema: 'public',
+          table: 'documents',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          refreshDocuments();
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, refreshDocuments]);
 
-  // Filter documents to show only those belonging to the current user
-  const userDocuments = user 
-    ? documents.filter(doc => doc.userId === user.id)
-    : [];
+  useEffect(() => {
+    if (user?.id && documents.length === 0 && !isLoading) {
+      refreshDocuments();
+    }
+  }, [user?.id, documents.length, isLoading, refreshDocuments]);
 
   return {
-    documents: userDocuments,
+    documents,
     searchResults,
     isSearching,
     currentDocument,
+    lastRefresh,
+    isRefreshing,
     isLoading,
-    error,
-    fetchDocuments,
-    getDocumentById,
-    uploadDocument,
-    generateSummary,
-    generateFlashcards,
+    refreshDocuments,
+    fetchDocumentById,
+    addDocument,
     handleSearch
   };
 };

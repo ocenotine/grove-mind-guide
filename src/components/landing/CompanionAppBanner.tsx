@@ -35,30 +35,46 @@ const CompanionAppBanner = () => {
           return;
         }
       }
-      
+
       try {
-        // Check Supabase for last_prompt_shown timestamp
+        // Check user preferences for last_prompt_shown
         const { data, error } = await supabase
-          .from('profiles')
+          .from('user_preferences')
           .select('last_prompt_shown')
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .single();
-          
+
         if (error) {
-          console.error('Error fetching banner status:', error);
-          setIsVisible(true); // Show by default if there's an error
+          // Create preference if it doesn't exist
+          if (error.code === 'PGRST116') {
+            await supabase
+              .from('user_preferences')
+              .insert([{ 
+                user_id: user.id, 
+                last_prompt_shown: null 
+              }]);
+            setIsVisible(true);
+          } else {
+            console.error('Error fetching banner status:', error);
+            setIsVisible(true); // Show by default if there's an error
+          }
           return;
         }
-        
-        if (data.last_prompt_shown) {
-          const lastPrompt = new Date(data.last_prompt_shown).getTime();
-          const currentTime = new Date().getTime();
-          const hoursPassed = (currentTime - lastPrompt) / (1000 * 60 * 60);
-          
-          // Show banner if 24 hours have passed since last shown
-          setIsVisible(hoursPassed >= 24);
+
+        if (data) {
+          if (!data.last_prompt_shown) {
+            // First time, show banner
+            setIsVisible(true);
+          } else {
+            const lastPrompt = new Date(data.last_prompt_shown).getTime();
+            const currentTime = new Date().getTime();
+            const hoursPassed = (currentTime - lastPrompt) / (1000 * 60 * 60);
+            
+            // Show banner if 24 hours have passed since last shown
+            setIsVisible(hoursPassed >= 24);
+          }
         } else {
-          // First time user, show banner
+          // No data, show banner
           setIsVisible(true);
         }
       } catch (error) {
@@ -78,9 +94,9 @@ const CompanionAppBanner = () => {
     if (user) {
       try {
         await supabase
-          .from('profiles')
+          .from('user_preferences')
           .update({ last_prompt_shown: new Date().toISOString() })
-          .eq('id', user.id);
+          .eq('user_id', user.id);
       } catch (error) {
         console.error('Error updating banner status:', error);
       }

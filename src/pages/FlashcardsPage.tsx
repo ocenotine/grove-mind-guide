@@ -4,63 +4,186 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Flashcard } from '@/utils/mockData';
 import MainLayout from '@/components/layout/MainLayout';
 import FlashcardDeck from '@/components/flashcards/FlashcardDeck';
 import { motion } from 'framer-motion';
 import { PlusCircle, Layers, Sparkles } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuthStore } from '@/store/authStore';
+
+// Define a consistent Flashcard interface across the app
+export interface Flashcard {
+  id: string;
+  question: string;
+  answer: string;
+  documentId?: string;
+  document_id?: string;
+  createdAt?: string;
+  created_at?: string;
+  userId?: string;
+  user_id?: string;
+  front_content?: string;
+  back_content?: string;
+}
 
 const FlashcardsPage = () => {
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [newQuestion, setNewQuestion] = useState('');
   const [newAnswer, setNewAnswer] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuthStore();
 
   useEffect(() => {
-    // Load flashcards from local storage or an API
-    const storedFlashcards = localStorage.getItem('flashcards');
-    if (storedFlashcards) {
-      setFlashcards(JSON.parse(storedFlashcards));
+    if (user) {
+      fetchFlashcards();
+    } else {
+      // If not logged in, try to use localStorage as fallback
+      const storedFlashcards = localStorage.getItem('flashcards');
+      if (storedFlashcards) {
+        setFlashcards(JSON.parse(storedFlashcards));
+      }
+      setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
-  useEffect(() => {
-    // Save flashcards to local storage whenever they change
-    localStorage.setItem('flashcards', JSON.stringify(flashcards));
-  }, [flashcards]);
-
-  const addFlashcard = () => {
-    if (newQuestion && newAnswer) {
-      const newCard: Flashcard = {
-        id: String(Date.now()), // Generate a unique ID
-        question: newQuestion,
-        answer: newAnswer,
-        front_content: newQuestion,
-        back_content: newAnswer,
-        documentId: 'default',
-        createdAt: new Date().toISOString(),
-        userId: 'default-user', 
-      };
+  const fetchFlashcards = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('flashcards')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
       
-      setFlashcards([...flashcards, newCard]);
-      setNewQuestion('');
-      setNewAnswer('');
-      setIsAdding(false);
+      // Map database fields to our flashcard interface
+      const formattedFlashcards = data.map(card => ({
+        id: card.id,
+        question: card.front_content || '',
+        answer: card.back_content || '',
+        front_content: card.front_content || '',
+        back_content: card.back_content || '',
+        documentId: card.document_id || '',
+        createdAt: card.created_at || '',
+        userId: card.user_id || ''
+      }));
       
+      setFlashcards(formattedFlashcards);
+    } catch (error) {
+      console.error('Error fetching flashcards:', error);
       toast({
-        title: "Flashcard created",
-        description: "Your new flashcard has been added to the deck",
+        title: "Error loading flashcards",
+        description: "There was a problem fetching your flashcards.",
+        variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const deleteFlashcard = (id: string) => {
-    setFlashcards(flashcards.filter(card => card.id !== id));
-    toast({
-      title: "Flashcard deleted",
-      description: "The flashcard has been removed from your deck",
-    });
+  const addFlashcard = async () => {
+    if (newQuestion && newAnswer) {
+      try {
+        const newCard: Omit<Flashcard, 'id'> = {
+          question: newQuestion,
+          answer: newAnswer,
+          front_content: newQuestion,
+          back_content: newAnswer,
+          userId: user?.id,
+          createdAt: new Date().toISOString()
+        };
+        
+        if (user) {
+          // Add to database if user is logged in
+          const { data, error } = await supabase
+            .from('flashcards')
+            .insert({
+              front_content: newQuestion,
+              back_content: newAnswer,
+              user_id: user.id
+            })
+            .select()
+            .single();
+            
+          if (error) throw error;
+          
+          // Add to state with database id
+          setFlashcards(prev => [{
+            id: data.id,
+            question: data.front_content,
+            answer: data.back_content,
+            documentId: data.document_id,
+            createdAt: data.created_at,
+            userId: data.user_id
+          }, ...prev]);
+        } else {
+          // Add to local state with generated id
+          const localCard = {
+            ...newCard,
+            id: `local_${Date.now()}`
+          };
+          setFlashcards(prev => [localCard, ...prev]);
+          
+          // Save to localStorage
+          const updatedFlashcards = [localCard, ...flashcards];
+          localStorage.setItem('flashcards', JSON.stringify(updatedFlashcards));
+        }
+        
+        setNewQuestion('');
+        setNewAnswer('');
+        setIsAdding(false);
+        
+        toast({
+          title: "Flashcard created",
+          description: "Your new flashcard has been added to the deck",
+        });
+      } catch (error) {
+        console.error('Error creating flashcard:', error);
+        toast({
+          title: "Error creating flashcard",
+          description: "There was a problem creating your flashcard.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+  const deleteFlashcard = async (id: string) => {
+    try {
+      if (user && !id.startsWith('local_')) {
+        // Delete from database
+        const { error } = await supabase
+          .from('flashcards')
+          .delete()
+          .eq('id', id);
+          
+        if (error) throw error;
+      }
+      
+      // Remove from state
+      setFlashcards(flashcards.filter(card => card.id !== id));
+      
+      // Update localStorage if using it
+      if (!user) {
+        const updatedFlashcards = flashcards.filter(card => card.id !== id);
+        localStorage.setItem('flashcards', JSON.stringify(updatedFlashcards));
+      }
+      
+      toast({
+        title: "Flashcard deleted",
+        description: "The flashcard has been removed from your deck",
+      });
+    } catch (error) {
+      console.error('Error deleting flashcard:', error);
+      toast({
+        title: "Error deleting flashcard",
+        description: "There was a problem removing your flashcard.",
+        variant: "destructive"
+      });
+    }
   };
 
   const containerVariants = {
@@ -158,7 +281,12 @@ const FlashcardsPage = () => {
         )}
         
         <motion.div variants={itemVariants} className="min-h-[400px]">
-          {flashcards.length === 0 ? (
+          {isLoading ? (
+            <Card className="bg-background/50 backdrop-blur-md border border-border/40 p-10 flex flex-col items-center justify-center h-64 text-center shadow-md">
+              <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+              <h3 className="text-lg font-medium mb-2">Loading flashcards...</h3>
+            </Card>
+          ) : flashcards.length === 0 ? (
             <Card className="bg-background/50 backdrop-blur-md border border-border/40 p-10 flex flex-col items-center justify-center h-64 text-center shadow-md">
               <Layers className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
               <h3 className="text-lg font-medium mb-2">No flashcards yet</h3>

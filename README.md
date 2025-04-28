@@ -7,7 +7,7 @@
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.9-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-[![OpenRouter](https://img.shields.io/badge/AI-OpenRouter-412991?style=for-the-badge&logo=openai)](https://openrouter.ai/)
+[![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
 
 <h3>Transforming Academic Research & Learning Through AI</h3>
 
@@ -20,11 +20,10 @@
 2. [Features](#-features)
 3. [Tech Stack](#-tech-stack)
 4. [Project Structure](#-project-structure)
-5. [Application Flow](#-application-flow)
+5. [Getting Started](#-getting-started)
 6. [User Types](#-user-types)
-7. [Installation](#-installation)
-8. [API & Integration](#-api--integration)
-9. [Deployment](#-deployment)
+7. [API & Integration](#-api--integration)
+8. [Deployment](#-deployment)
 
 ---
 
@@ -70,7 +69,6 @@ MindGrove is an innovative AI-powered platform designed to enhance academic rese
 - Analytics dashboard for tracking student engagement 
 - User management and reporting
 - Research collaboration portals
-- AI lecture upgrader
 
 ---
 
@@ -83,7 +81,6 @@ MindGrove is built with modern, robust technologies to ensure performance, scala
 - **Tailwind CSS** and **shadcn/ui** for styling
 - **Framer Motion** for animations
 - **Tanstack Query** for data fetching and state management
-- **Vite** for development and building
 - **Recharts** for data visualization
 
 ### Backend & Services
@@ -91,7 +88,6 @@ MindGrove is built with modern, robust technologies to ensure performance, scala
 - **OpenRouter API** for document understanding and generation
 - **PDF.js** for document rendering and text extraction
 - **Edge Functions** for serverless backend operations
-- **Selar.co** for premium subscription payments
 
 ---
 
@@ -101,9 +97,7 @@ MindGrove is built with modern, robust technologies to ensure performance, scala
 mindgrove/
 ├── public/                 # Static assets
 │   ├── document-icons/     # Icons for document types
-│   ├── fonts/              # Custom fonts
-│   ├── sounds/             # UI sound effects
-│   └── mindgrove.png       # App logo
+│   ├── mindgrove.png       # App logo
 ├── src/
 │   ├── components/         # Reusable UI components
 │   │   ├── animations/     # Animation components
@@ -117,60 +111,21 @@ mindgrove/
 │   │   ├── layout/         # Layout components (headers, nav, etc.)
 │   │   ├── onboarding/     # User onboarding components
 │   │   ├── profile/        # User profile components
+│   │   ├── theme/          # Theme components
 │   │   └── ui/             # shadcn/ui components
 │   ├── hooks/              # Custom React hooks
 │   ├── integrations/       # External service integrations
 │   │   └── supabase/       # Supabase client setup
 │   ├── pages/              # Application pages/routes
 │   ├── store/              # Global state management
-│   ├── styles/             # Global styles
 │   ├── types/              # TypeScript type definitions
 │   └── utils/              # Utility functions
-├── supabase/
-│   ├── functions/          # Supabase Edge Functions
-│   │   ├── ai-helper/      # AI processing functions
-│   │   ├── generate-report/ # Institutional report generation
-│   │   └── selar-webhook/  # Payment processing webhook
-│   └── migrations/         # Database migrations
 └── config files            # Various configuration files
 ```
 
 ---
 
-## 🔄 Application Flow
-
-1. **User Authentication**: Sign up/Login via email, password or Google
-2. **Document Upload**: Users can upload academic documents (PDFs, etc.)
-3. **AI Processing**: Documents are processed for text extraction and analysis
-4. **Study Tools**: Users can:
-   - View AI-generated summaries
-   - Create flashcards from documents
-   - Chat with the AI about document content or general topics
-   - Track learning progress through streaks and leaderboards
-5. **Institutional Features**: Institutions can customize dashboards and access analytics
-
----
-
-## 👥 User Types
-
-### Student Users (Free Tier)
-- Document uploading and management
-- AI-powered summaries and flashcards
-- Learning streaks and gamification
-- Mobile companion app
-- Participation in leaderboards
-
-### Institutional Users (Premium Tier)
-- All student features
-- Advanced analytics dashboard
-- Research collaboration portals
-- Custom branding options
-- Automated report generation
-- AI lecture upgrading tools
-
----
-
-## 🚀 Installation
+## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js 16+ and npm/yarn
@@ -214,22 +169,35 @@ yarn build
 
 ---
 
+## 👥 User Types
+
+### Student Users
+- Document uploading and management
+- AI-powered summaries and flashcards
+- Learning streaks and gamification
+- Mobile companion app
+- Participation in leaderboards
+
+### Institutional Users
+- All student features
+- Advanced analytics dashboard
+- Research collaboration portals
+- Custom branding options
+- Automated report generation
+
+---
+
 ## 🔌 API & Integration
 
 MindGrove integrates with several powerful APIs:
-
-### OpenRouter
-- Used for document summarization, flashcard generation, and contextual chat
-- Configured via API key in environment variables
 
 ### Supabase
 - Authentication, user management, and document storage
 - Database for user profiles, document metadata, and flashcards
 - Edge functions for serverless operations
 
-### Selar.co
-- Payment processing for premium institutional subscriptions
-- Webhook for subscription status updates
+### OpenRouter API
+- Used for document summarization, flashcard generation, and contextual chat
 
 ### PDF Processing
 - PDF.js for client-side text extraction
@@ -244,18 +212,6 @@ MindGrove is deployed using:
 - Frontend: Vercel/Netlify for static site hosting
 - Backend: Supabase Cloud for database, auth, and storage
 - Edge Functions: Supabase Edge Functions for serverless backend logic
-
-To deploy:
-
-1. Push to your connected repository (GitHub/GitLab)
-2. Configure deployment platform with required environment variables
-3. Deploy!
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 

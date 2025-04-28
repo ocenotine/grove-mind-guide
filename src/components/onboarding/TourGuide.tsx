@@ -78,24 +78,27 @@ const TourGuide: React.FC = () => {
           .single();
           
         if (error) {
-          console.error('Error fetching tour status:', error);
+          if (error.code === 'PGRST116') {
+            // No record found, create one
+            await supabase
+              .from('user_preferences')
+              .insert([{ user_id: user.id, tour_completed: false }]);
+            
+            // Only start tour on dashboard page
+            if (location.pathname === '/dashboard') {
+              setTourActive(true);
+            }
+          } else {
+            console.error('Error fetching tour status:', error);
+          }
           return;
         }
         
-        if (!data) {
-          // Create user preferences if they don't exist
-          await supabase
-            .from('user_preferences')
-            .insert([{ user_id: user.id, tour_completed: false }]);
-          
-          // Only start tour on dashboard page
-          if (location.pathname === '/dashboard') {
+        if (data) {
+          setTourCompleted(data.tour_completed);
+          if (!data.tour_completed && location.pathname === '/dashboard') {
             setTourActive(true);
           }
-        } else if (!data.tour_completed && location.pathname === '/dashboard') {
-          setTourActive(true);
-        } else {
-          setTourCompleted(data.tour_completed);
         }
       } catch (error) {
         console.error('Error checking tour status:', error);

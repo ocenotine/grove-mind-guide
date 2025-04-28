@@ -1,16 +1,19 @@
-
 import React, { useState } from 'react';
-import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PencilLine, LogOut, Camera, Check, X } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuthStore } from '@/store/authStore';
 
-const ProfileHeader = () => {
+interface ProfileHeaderProps {
+  user: any; // Using any for now to bypass type checking until we define proper types
+}
+
+const ProfileHeader = ({ user }: ProfileHeaderProps) => {
   const navigate = useNavigate();
-  const { user, logout, updateProfile } = useAuthStore();
+  const { user: authUser, logout, updateProfile } = useAuthStore();
   const [isEditingAvatar, setIsEditingAvatar] = useState(false);
   const [newAvatarFile, setNewAvatarFile] = useState<File | null>(null);
   const [newAvatarPreview, setNewAvatarPreview] = useState<string | null>(null);
@@ -57,12 +60,12 @@ const ProfileHeader = () => {
   };
   
   const handleSaveAvatar = async () => {
-    if (!newAvatarFile || !user) return;
+    if (!newAvatarFile || !authUser) return;
     
     try {
       // Get file extension
       const fileExt = newAvatarFile.name.split('.').pop();
-      const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const fileName = `${authUser.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
@@ -106,7 +109,7 @@ const ProfileHeader = () => {
     setNewAvatarPreview(null);
   };
   
-  const getInitials = (name: string | null) => {
+  const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
     return name.split(' ')
       .map(n => n[0])
@@ -115,7 +118,16 @@ const ProfileHeader = () => {
       .substring(0, 2);
   };
   
-  if (!user) return null;
+  if (!authUser) return null;
+
+  // Format account type for display
+  const accountTypeDisplay = authUser.account_type === 'admin' 
+    ? 'Administrator' 
+    : authUser.account_type === 'institution'
+      ? 'Institution' 
+      : authUser.account_type === 'teacher'
+        ? 'Teacher'
+        : 'Student';
 
   return (
     <div className="bg-card border rounded-lg p-6 md:p-8 mb-6">
@@ -123,12 +135,12 @@ const ProfileHeader = () => {
         <div className="relative">
           <Avatar className="w-24 h-24 border-2 border-primary">
             {(isEditingAvatar && newAvatarPreview) ? (
-              <AvatarImage src={newAvatarPreview} alt={user.name || 'User'} />
-            ) : user.avatarUrl ? (
-              <AvatarImage src={user.avatarUrl} alt={user.name || 'User'} />
+              <AvatarImage src={newAvatarPreview} alt={authUser.name || 'User'} />
+            ) : authUser.avatarUrl ? (
+              <AvatarImage src={authUser.avatarUrl} alt={authUser.name || 'User'} />
             ) : (
               <AvatarFallback className="text-lg bg-primary/10">
-                {getInitials(user.name)}
+                {getInitials(authUser.name)}
               </AvatarFallback>
             )}
           </Avatar>
@@ -170,29 +182,28 @@ const ProfileHeader = () => {
         </div>
         
         <div className="flex-1 text-center md:text-left">
-          <h2 className="text-2xl font-bold">{user.name}</h2>
-          <p className="text-muted-foreground mb-2">{user.email}</p>
+          <h2 className="text-2xl font-bold">{authUser.name}</h2>
+          <p className="text-muted-foreground mb-2">{authUser.email}</p>
           
-          {user.bio && (
-            <p className="text-sm mt-2">{user.bio}</p>
+          {authUser.bio && (
+            <p className="text-sm mt-2">{authUser.bio}</p>
           )}
           
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-3">
             <div className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full">
-              {user.account_type === 'admin' ? 'Administrator' : 
-               user.account_type === 'institution' ? 'Institution' : 'Student'}
+              {accountTypeDisplay}
             </div>
             
             <div className="text-xs bg-muted px-3 py-1 rounded-full">
-              {user.document_count || 0} Documents
+              {authUser.document_count || 0} Documents
             </div>
             
             <div className="text-xs bg-muted px-3 py-1 rounded-full">
-              {user.flashcard_count || 0} Flashcards
+              {authUser.flashcard_count || 0} Flashcards
             </div>
             
             <div className="text-xs bg-muted px-3 py-1 rounded-full">
-              {user.streak_count || 0} Day Streak
+              {authUser.streak_count || 0} Day Streak
             </div>
           </div>
         </div>

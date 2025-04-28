@@ -24,17 +24,20 @@ const DocumentCard = ({ document, className }: DocumentCardProps) => {
   
   useEffect(() => {
     // Check if the user has access to this document
-    if (user && document.userId && document.userId !== user.id) {
+    if (user && document.user_id && document.user_id !== user.id) {
       setCanAccess(false);
     } else {
       setCanAccess(true);
     }
-  }, [user, document.userId]);
+  }, [user, document.user_id]);
   
   // Format the date to show how long ago it was last accessed
   const getLastAccessedTime = () => {
     try {
-      return formatDistanceToNow(new Date(document.lastAccessed), { addSuffix: true });
+      if (document.lastAccessed) {
+        return formatDistanceToNow(new Date(document.lastAccessed), { addSuffix: true });
+      }
+      return 'recently';
     } catch (error) {
       return 'recently';
     }

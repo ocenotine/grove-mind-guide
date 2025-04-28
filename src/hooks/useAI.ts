@@ -1,17 +1,13 @@
 
 import { useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
-import { useDocumentStore } from '@/store/documentStore';
-import { generateDocumentSummary, generateFlashcards, playNotificationSound } from '@/utils/openRouterUtils';
+import { useDocumentStore, Flashcard } from '@/store/documentStore';
+import { generateDocumentSummary, generateFlashcards, playNotificationSound, getOpenRouterApiKey } from '@/utils/openRouterUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UseAIProps {
   onSuccess?: (data: any) => void;
   onError?: (error: Error) => void;
-}
-
-interface Flashcard {
-  question: string;
-  answer: string;
 }
 
 export function useAI({ onSuccess, onError }: UseAIProps = {}) {
@@ -20,6 +16,21 @@ export function useAI({ onSuccess, onError }: UseAIProps = {}) {
   const { setDocumentSummary, saveFlashcards } = useDocumentStore();
 
   const summarizeDocument = async (documentText: string, documentId: string) => {
+    // Check if OpenRouter API key is set
+    const apiKey = getOpenRouterApiKey();
+    if (!apiKey) {
+      const error = new Error("OpenRouter API key not set. Please set your API key in settings.");
+      toast({
+        title: 'API Key Required',
+        description: error.message,
+        variant: 'destructive',
+      });
+      
+      if (onError) onError(error);
+      setError(error);
+      return "Please set your OpenRouter API key in settings to generate summaries.";
+    }
+    
     setIsLoading(true);
     setError(null);
     
@@ -37,6 +48,19 @@ export function useAI({ onSuccess, onError }: UseAIProps = {}) {
       // Save summary to document store
       await setDocumentSummary(documentId, summary);
       
+      // Also save directly to the database
+      try {
+        const { error } = await supabase
+          .from('documents')
+          .update({ summary })
+          .eq('id', documentId);
+          
+        if (error) throw error;
+      } catch (dbError) {
+        console.error("Error saving summary to database:", dbError);
+        // Continue even if saving to database fails
+      }
+      
       console.log("Received summary:", summary);
       
       if (onSuccess) onSuccess(summary);
@@ -45,6 +69,9 @@ export function useAI({ onSuccess, onError }: UseAIProps = {}) {
         title: 'Summary generated',
         description: 'Document summary created successfully',
       });
+      
+      // Play notification sound
+      await playNotificationSound();
       
       return summary;
     } catch (err) {
@@ -68,6 +95,26 @@ export function useAI({ onSuccess, onError }: UseAIProps = {}) {
   };
   
   const generateDocumentFlashcards = async (documentText: string, documentId: string): Promise<Flashcard[]> => {
+    // Check if OpenRouter API key is set
+    const apiKey = getOpenRouterApiKey();
+    if (!apiKey) {
+      const error = new Error("OpenRouter API key not set. Please set your API key in settings.");
+      toast({
+        title: 'API Key Required',
+        description: error.message,
+        variant: 'destructive',
+      });
+      
+      if (onError) onError(error);
+      setError(error);
+      return [
+        {
+          question: "Why can't I generate flashcards?",
+          answer: "You need to set your OpenRouter API key in settings first."
+        }
+      ];
+    }
+    
     setIsLoading(true);
     setError(null);
     
@@ -85,6 +132,23 @@ export function useAI({ onSuccess, onError }: UseAIProps = {}) {
       // Save flashcards to document store
       await saveFlashcards(documentId, flashcards);
       
+      // Also save directly to the database
+      try {
+        for (const flashcard of flashcards) {
+          await supabase
+            .from('flashcards')
+            .insert({
+              document_id: documentId,
+              front_content: flashcard.question,
+              back_content: flashcard.answer,
+              user_id: (await supabase.auth.getUser()).data.user?.id
+            });
+        }
+      } catch (dbError) {
+        console.error("Error saving flashcards to database:", dbError);
+        // Continue even if saving to database fails
+      }
+      
       console.log("Received flashcards:", flashcards);
       
       if (onSuccess) onSuccess(flashcards);
@@ -93,6 +157,9 @@ export function useAI({ onSuccess, onError }: UseAIProps = {}) {
         title: 'Flashcards generated',
         description: `${flashcards.length} flashcards created from your document`,
       });
+      
+      // Play notification sound
+      await playNotificationSound();
       
       return flashcards;
     } catch (err) {

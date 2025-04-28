@@ -3,8 +3,35 @@ import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 
+// Export the UserWithMetadata interface
+export interface UserWithMetadata extends User {
+  name?: string;
+  email?: string;
+  account_type?: 'student' | 'admin' | 'teacher' | 'institution';
+  avatarUrl?: string;
+  last_prompt_shown?: string;
+  bio?: string;
+  document_count?: number;
+  flashcard_count?: number;
+  streak_count?: number;
+  study_hours?: number;
+  last_active?: string;
+  institution_id?: string;
+  subscription_tier?: string;
+  subscription_expiry?: string;
+  is_first_login?: boolean;
+  user_metadata: {
+    name?: string;
+    account_type?: 'student' | 'admin' | 'teacher' | 'institution';
+    institution_name?: string;
+    domain?: string;
+    institution_id?: string;
+    bio?: string;
+  };
+}
+
 interface AuthState {
-  user: User | null;
+  user: UserWithMetadata | null;
   session: Session | null;
   isAuthenticated: boolean;
   loading: boolean;
@@ -12,9 +39,11 @@ interface AuthState {
   signup: (email: string, password: string, name: string, options?: any) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
-  setUser: (user: User | null) => void;
+  setUser: (user: UserWithMetadata | null) => void;
   setSession: (session: Session | null) => void;
   setLoading: (loading: boolean) => void;
+  updateProfile: (data: Partial<UserWithMetadata>) => Promise<void>;
+  initialize: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -28,9 +57,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
   
   setSession: (session) => {
+    // Extract user metadata from session
+    const user = session?.user ? {
+      ...session.user,
+      name: session.user.user_metadata?.name || session.user.user_metadata?.full_name,
+      account_type: session.user.user_metadata?.account_type || 'student',
+      avatarUrl: session.user.user_metadata?.avatar_url,
+      institution_id: session.user.user_metadata?.institution_id,
+      subscription_tier: 'free',
+      subscription_expiry: null,
+      is_first_login: false
+    } as UserWithMetadata : null;
+
     set({ 
       session, 
-      user: session?.user || null,
+      user,
       isAuthenticated: !!session?.user
     });
   },
@@ -49,25 +90,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       throw error;
     }
     
+    // Process user metadata
+    const user = data.user ? {
+      ...data.user,
+      name: data.user.user_metadata?.name || data.user.user_metadata?.full_name,
+      account_type: data.user.user_metadata?.account_type || 'student',
+      avatarUrl: data.user.user_metadata?.avatar_url,
+      subscription_tier: 'free',
+      subscription_expiry: null,
+      is_first_login: false
+    } as UserWithMetadata : null;
+    
     set({ 
-      user: data.user, 
+      user,
       session: data.session,
       isAuthenticated: true 
     });
   },
   
   signup: async (email, password, name, options = {}) => {
-    let userData = {
-      name
+    const userData = {
+      name,
+      account_type: options.accountType || 'student'
     };
     
     if (options.accountType === 'institution') {
-      userData = {
-        ...userData,
-        accountType: options.accountType,
-        institutionName: options.institutionName,
+      Object.assign(userData, {
+        institution_name: options.institutionName,
         domain: options.domain
-      };
+      });
     }
     
     const { data, error } = await supabase.auth.signUp({
@@ -83,8 +134,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     
     if (data.user) {
+      // Process user metadata
+      const user = {
+        ...data.user,
+        name: userData.name,
+        account_type: userData.account_type,
+        subscription_tier: 'free',
+        subscription_expiry: null,
+        is_first_login: true
+      } as UserWithMetadata;
+      
       set({ 
-        user: data.user, 
+        user,
         session: data.session,
         isAuthenticated: !!data.session
       });
@@ -95,7 +156,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`
+        redirectTo: `${window.location.origin}/#/auth/callback`
       }
     });
     
@@ -132,6 +193,54 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.error('Logout error:', error);
       return Promise.reject(error);
     }
+  },
+
+  updateProfile: async (data) => {
+    const { error } = await supabase.auth.updateUser({
+      data
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    // Update local user data
+    const currentUser = get().user;
+    if (currentUser) {
+      set({ user: { ...currentUser, ...data } });
+    }
+  },
+  
+  initialize: async () => {
+    const { setUser, setSession, setLoading } = get();
+    setLoading(true);
+    
+    try {
+      // Get the current session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Process user metadata from existing session
+      const user = session?.user ? {
+        ...session.user,
+        name: session.user.user_metadata?.name || session.user.user_metadata?.full_name,
+        account_type: session.user.user_metadata?.account_type || 'student',
+        avatarUrl: session.user.user_metadata?.avatar_url,
+        institution_id: session.user.user_metadata?.institution_id,
+        subscription_tier: 'free',
+        subscription_expiry: null,
+        is_first_login: false
+      } as UserWithMetadata : null;
+      
+      setSession(session);
+      setUser(user);
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Auth initialization error:", error);
+      return Promise.reject(error);
+    } finally {
+      setLoading(false);
+    }
   }
 }));
 
@@ -143,16 +252,41 @@ export const initializeAuth = async () => {
     // First set up the auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        // Process user metadata from session
+        const user = session?.user ? {
+          ...session.user,
+          name: session.user.user_metadata?.name || session.user.user_metadata?.full_name,
+          account_type: session.user.user_metadata?.account_type || 'student',
+          avatarUrl: session.user.user_metadata?.avatar_url,
+          institution_id: session.user.user_metadata?.institution_id,
+          subscription_tier: 'free',
+          subscription_expiry: null,
+          is_first_login: false
+        } as UserWithMetadata : null;
+        
         setSession(session);
-        setUser(session?.user ?? null);
+        setUser(user);
         setLoading(false);
       }
     );
     
     // Then check for any existing session
     const { data: { session } } = await supabase.auth.getSession();
+    
+    // Process user metadata from existing session
+    const user = session?.user ? {
+      ...session.user,
+      name: session.user.user_metadata?.name || session.user.user_metadata?.full_name,
+      account_type: session.user.user_metadata?.account_type || 'student',
+      avatarUrl: session.user.user_metadata?.avatar_url,
+      institution_id: session.user.user_metadata?.institution_id,
+      subscription_tier: 'free',
+      subscription_expiry: null,
+      is_first_login: false
+    } as UserWithMetadata : null;
+    
     setSession(session);
-    setUser(session?.user ?? null);
+    setUser(user);
     setLoading(false);
     
     return () => {
