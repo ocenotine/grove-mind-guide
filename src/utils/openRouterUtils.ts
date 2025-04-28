@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 // Function to retrieve the API key from local storage or use the default one
 export const getOpenRouterApiKey = (): string => {
   // Use the provided API key
-  return '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';
+  return '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';
 };
 
 // Set the OpenRouter API key
