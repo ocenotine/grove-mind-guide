@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   FileText, FileImage, FileVideo, FileAudio, 
-  FileCode, FilePen, FileSpreadsheet, FileQuestion, FilePdf, FileX
+  FileCode, FilePen, FileSpreadsheet, FileQuestion, FileX
 } from 'lucide-react';
 
 interface DocumentIconProps {
@@ -53,7 +53,8 @@ const DocumentIcon: React.FC<DocumentIconProps> = ({
   }
   
   if (type.endsWith('pdf')) {
-    return <FilePdf {...iconProps} color="#ff5733" />;
+    // Replace FilePdf with FileText with appropriate styling
+    return <FileText {...iconProps} color="#ff5733" />;
   }
   
   if (type.endsWith('ppt') || type.endsWith('pptx')) {
