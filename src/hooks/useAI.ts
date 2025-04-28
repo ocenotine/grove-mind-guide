@@ -16,19 +16,19 @@ export function useAI({ onSuccess, onError }: UseAIProps = {}) {
   const { setDocumentSummary, saveFlashcards } = useDocumentStore();
 
   const summarizeDocument = async (documentText: string, documentId: string) => {
-    // Check if OpenRouter API key is set
+    // Check if OpenRouter API key is set (should always be true now)
     const apiKey = getOpenRouterApiKey();
     if (!apiKey) {
-      const error = new Error("OpenRouter API key not set. Please set your API key in settings.");
+      const error = new Error("OpenRouter API key not set. Please contact support.");
       toast({
-        title: 'API Key Required',
+        title: 'API Service Error',
         description: error.message,
         variant: 'destructive',
       });
       
       if (onError) onError(error);
       setError(error);
-      return "Please set your OpenRouter API key in settings to generate summaries.";
+      return "Unable to generate summary at this time.";
     }
     
     setIsLoading(true);

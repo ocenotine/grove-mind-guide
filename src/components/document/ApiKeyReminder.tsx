@@ -1,30 +1,74 @@
 
-import React from 'react';
-import { Check } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
+import React, { useEffect, useState } from 'react';
+import { AlertCircle, Check } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { getOpenRouterApiKey } from '@/utils/openRouterUtils';
 
 const ApiKeyReminder = () => {
-  // Always show the ready state since we're using a built-in API key
+  const [apiStatus, setApiStatus] = useState<'checking' | 'valid' | 'invalid'>('checking');
+
+  useEffect(() => {
+    const checkApiKey = async () => {
+      const apiKey = getOpenRouterApiKey();
+      
+      if (!apiKey) {
+        setApiStatus('invalid');
+        return;
+      }
+      
+      try {
+        // Make a simple request to validate the API key is working
+        const response = await fetch('https://openrouter.ai/api/v1/models', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://mindgrove.app'
+          }
+        });
+        
+        if (response.ok) {
+          setApiStatus('valid');
+        } else {
+          setApiStatus('invalid');
+        }
+      } catch (error) {
+        console.error("Error checking API key:", error);
+        setApiStatus('invalid');
+      }
+    };
+    
+    // Check the API key on component mount
+    checkApiKey();
+  }, []);
+  
+  // If API key is valid, don't show anything
+  if (apiStatus === 'valid') {
+    return null;
+  }
+  
   return (
-    <Alert className="mb-4 border border-blue-200 bg-background dark:border-blue-800">
-      <div className="flex items-start">
-        <Check className="h-5 w-5 mt-0.5 mr-2 text-green-500" />
-        <div className="flex-1">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-            <AlertTitle className="mb-0">AI Features Ready</AlertTitle>
-            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 flex items-center gap-1 w-fit">
-              <Check className="h-3 w-3" /> Active
-            </Badge>
-          </div>
-          <AlertDescription className="text-muted-foreground">
-            <p className="mb-2">
-              Your document is ready to be analyzed. Generate summaries and flashcards for efficient studying with just one click.
+    <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
+      <CardContent className="p-4">
+        <div className="flex items-start gap-2">
+          {apiStatus === 'checking' ? (
+            <div className="h-5 w-5 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
+          ) : (
+            <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
+          )}
+          <div>
+            <p className="font-medium text-amber-800 dark:text-amber-300">
+              {apiStatus === 'checking' ? 'Checking AI service connection...' : 'AI features enabled'}
             </p>
-          </AlertDescription>
+            <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+              {apiStatus === 'checking' 
+                ? 'Verifying connection to OpenRouter AI services...' 
+                : 'OpenRouter API service is configured and ready to use.'}
+            </p>
+          </div>
         </div>
-      </div>
-    </Alert>
+      </CardContent>
+    </Card>
   );
 };
 
