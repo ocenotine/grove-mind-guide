@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   FileText, FileImage, FileVideo, FileAudio, 
-  FileCode, FilePen, FileSpreadsheet, FileQuestion 
+  FileCode, FilePen, FileSpreadsheet, FileQuestion, FilePdf, FileX
 } from 'lucide-react';
 
 interface DocumentIconProps {
@@ -45,15 +45,15 @@ const DocumentIcon: React.FC<DocumentIconProps> = ({
   }
   
   if (type.endsWith('doc') || type.endsWith('docx')) {
-    return <FilePen {...iconProps} />;
+    return <FilePen {...iconProps} color="#4285f4" />;
   }
   
   if (type.endsWith('xls') || type.endsWith('xlsx') || type.endsWith('csv')) {
-    return <FileSpreadsheet {...iconProps} />;
+    return <FileSpreadsheet {...iconProps} color="#21a366" />;
   }
   
   if (type.endsWith('pdf')) {
-    return <FileText {...iconProps} color="#ff5733" />;
+    return <FilePdf {...iconProps} color="#ff5733" />;
   }
   
   if (type.endsWith('ppt') || type.endsWith('pptx')) {
