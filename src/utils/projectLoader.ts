@@ -15,7 +15,8 @@ export interface Project {
   starCount?: number;
   startDate?: string;
   endDate?: string;
-  featured?: boolean; // Added featured property
+  featured?: boolean;
+  date?: string; // Added date property
 }
 
 export function getProjects(): Project[] {
