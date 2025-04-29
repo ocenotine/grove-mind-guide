@@ -1,21 +1,66 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import BackToTop from "@/components/BackToTop";
 import SkeletonCard from "@/components/SkeletonCard";
 import ImageCarousel from "@/components/ImageCarousel";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Calendar, Laptop, Users, BookOpen } from "lucide-react";
+import { getMarkdownFiles, MarkdownFile, isUpcomingEvent } from "@/utils/markdownLoader";
+import BlogPost from "@/components/BlogPost";
+import EventCard from "@/components/EventCard";
 
 const Home = () => {
   const [loading, setLoading] = useState(true);
   const [visibleSections, setVisibleSections] = useState<string[]>([]);
+  const [stats, setStats] = useState({
+    members: 0,
+    projects: 0,
+    events: 0,
+    posts: 0
+  });
+  const [latestBlogs, setLatestBlogs] = useState<MarkdownFile[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<MarkdownFile[]>([]);
   const aboutSectionRef = useRef<HTMLDivElement>(null);
   const featuresSectionRef = useRef<HTMLDivElement>(null);
   const ctaSectionRef = useRef<HTMLDivElement>(null);
+  const statsSectionRef = useRef<HTMLDivElement>(null);
+  const blogsSectionRef = useRef<HTMLDivElement>(null);
+  const eventsSectionRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
+      
+      // Animate stats counting up
+      const duration = 2000;
+      const frameDuration = 1000 / 60;
+      const totalFrames = Math.round(duration / frameDuration);
+      
+      let frame = 0;
+      const finalStats = {
+        members: 1250,
+        projects: 85,
+        events: 37,
+        posts: 120
+      };
+      
+      const counter = setInterval(() => {
+        frame++;
+        const progress = frame / totalFrames;
+        
+        setStats({
+          members: Math.floor(progress * finalStats.members),
+          projects: Math.floor(progress * finalStats.projects),
+          events: Math.floor(progress * finalStats.events),
+          posts: Math.floor(progress * finalStats.posts)
+        });
+        
+        if (frame === totalFrames) {
+          clearInterval(counter);
+          setStats(finalStats);
+        }
+      }, frameDuration);
     }, 1500);
     
     const observer = new IntersectionObserver((entries) => {
@@ -29,6 +74,35 @@ const Home = () => {
     if (aboutSectionRef.current) observer.observe(aboutSectionRef.current);
     if (featuresSectionRef.current) observer.observe(featuresSectionRef.current);
     if (ctaSectionRef.current) observer.observe(ctaSectionRef.current);
+    if (statsSectionRef.current) observer.observe(statsSectionRef.current);
+    if (blogsSectionRef.current) observer.observe(blogsSectionRef.current);
+    if (eventsSectionRef.current) observer.observe(eventsSectionRef.current);
+    
+    // Fetch content data
+    const fetchContent = async () => {
+      try {
+        // Fetch blogs
+        const blogs = await getMarkdownFiles('content/blog');
+        const sortedBlogs = blogs.sort((a, b) => 
+          new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime()
+        ).slice(0, 3);
+        setLatestBlogs(sortedBlogs);
+        
+        // Fetch events
+        const events = await getMarkdownFiles('content/events');
+        const upcoming = events
+          .filter(event => isUpcomingEvent(event.frontmatter.date))
+          .sort((a, b) => 
+            new Date(a.frontmatter.date).getTime() - new Date(b.frontmatter.date).getTime()
+          )
+          .slice(0, 3);
+        setUpcomingEvents(upcoming);
+      } catch (error) {
+        console.error("Error fetching content:", error);
+      }
+    };
+    
+    fetchContent();
     
     return () => {
       clearTimeout(timer);
@@ -136,6 +210,57 @@ const Home = () => {
         </div>
       </section>
       
+      {/* Community Stats Section */}
+      <section
+        id="stats"
+        ref={statsSectionRef}
+        className="py-16 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-gray-800/50 dark:to-gray-700/50"
+      >
+        <div className="container mx-auto px-4">
+          <div className={`text-center mb-12 ${visibleSections.includes('stats') ? 'animate-fade-in' : 'opacity-0'}`}>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">Our Community Impact</h2>
+            <div className="w-24 h-1 bg-tekOrange mx-auto mt-4 mb-6"></div>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              Building Africa's tech ecosystem one developer at a time. Here's our journey so far.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div className={`bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${visibleSections.includes('stats') ? 'animate-fade-in delay-100' : 'opacity-0'}`}>
+              <div className="flex justify-center mb-4">
+                <Users size={36} className="text-tekOrange" />
+              </div>
+              <div className="text-4xl font-bold text-gray-800 dark:text-white mb-2">{stats.members.toLocaleString()}</div>
+              <p className="text-gray-600 dark:text-gray-400">Community Members</p>
+            </div>
+            
+            <div className={`bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${visibleSections.includes('stats') ? 'animate-fade-in delay-200' : 'opacity-0'}`}>
+              <div className="flex justify-center mb-4">
+                <Laptop size={36} className="text-tekOrange" />
+              </div>
+              <div className="text-4xl font-bold text-gray-800 dark:text-white mb-2">{stats.projects}</div>
+              <p className="text-gray-600 dark:text-gray-400">Active Projects</p>
+            </div>
+            
+            <div className={`bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${visibleSections.includes('stats') ? 'animate-fade-in delay-300' : 'opacity-0'}`}>
+              <div className="flex justify-center mb-4">
+                <Calendar size={36} className="text-tekOrange" />
+              </div>
+              <div className="text-4xl font-bold text-gray-800 dark:text-white mb-2">{stats.events}</div>
+              <p className="text-gray-600 dark:text-gray-400">Events Hosted</p>
+            </div>
+            
+            <div className={`bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${visibleSections.includes('stats') ? 'animate-fade-in delay-400' : 'opacity-0'}`}>
+              <div className="flex justify-center mb-4">
+                <BookOpen size={36} className="text-tekOrange" />
+              </div>
+              <div className="text-4xl font-bold text-gray-800 dark:text-white mb-2">{stats.posts}</div>
+              <p className="text-gray-600 dark:text-gray-400">Knowledge Resources</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      
       {/* About Us Section */}
       <section
         id="about"
@@ -161,11 +286,113 @@ const Home = () => {
               ) : (
                 <img 
                   src="public/uploads/tektalentlogo.png" 
-                  alt="Tek Talent comunity" 
+                  alt="Tek Talent community" 
                   className="w-full h-full object-cover"
                 />
               )}
             </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Latest Blog Posts Section */}
+      <section
+        id="latest-blogs"
+        ref={blogsSectionRef}
+        className="py-20 bg-white dark:bg-gray-900"
+      >
+        <div className="container mx-auto px-4">
+          <div className={`flex justify-between items-center mb-10 ${visibleSections.includes('latest-blogs') ? 'animate-fade-in' : 'opacity-0'}`}>
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">Latest Articles</h2>
+              <div className="w-24 h-1 bg-tekOrange mt-4 mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-300">Fresh insights from our community members</p>
+            </div>
+            <Link to="/blog">
+              <Button variant="outline" className="border-tekOrange text-tekOrange hover:bg-tekOrange/10 flex items-center gap-2">
+                View All <ArrowRight size={16} />
+              </Button>
+            </Link>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {loading ? (
+              <>
+                <SkeletonCard />
+                <SkeletonCard className="hidden md:block" />
+                <SkeletonCard className="hidden lg:block" />
+              </>
+            ) : latestBlogs.length > 0 ? (
+              latestBlogs.map((blog, index) => (
+                <div key={blog.slug} className={`${visibleSections.includes('latest-blogs') ? `animate-fade-in delay-${(index + 1) * 100}` : 'opacity-0'}`}>
+                  <BlogPost
+                    title={blog.frontmatter.title}
+                    date={blog.frontmatter.date}
+                    author={blog.frontmatter.author || "Tek Talent Africa"}
+                    summary={blog.frontmatter.description}
+                    image={blog.frontmatter.image || "public/uploads/tektalentlogo.png"}
+                    category={blog.frontmatter.category || "General"}
+                    slug={blog.slug}
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-12">
+                <p className="text-gray-500 dark:text-gray-400">No blog posts found</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+      
+      {/* Upcoming Events Section */}
+      <section
+        id="upcoming-events"
+        ref={eventsSectionRef}
+        className="py-20 bg-gray-50 dark:bg-gray-800"
+      >
+        <div className="container mx-auto px-4">
+          <div className={`flex justify-between items-center mb-10 ${visibleSections.includes('upcoming-events') ? 'animate-fade-in' : 'opacity-0'}`}>
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">Upcoming Events</h2>
+              <div className="w-24 h-1 bg-tekOrange mt-4 mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-300">Join us at these exciting tech gatherings</p>
+            </div>
+            <Link to="/events">
+              <Button variant="outline" className="border-tekOrange text-tekOrange hover:bg-tekOrange/10 flex items-center gap-2">
+                All Events <ArrowRight size={16} />
+              </Button>
+            </Link>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {loading ? (
+              <>
+                <SkeletonCard />
+                <SkeletonCard className="hidden md:block" />
+                <SkeletonCard className="hidden lg:block" />
+              </>
+            ) : upcomingEvents.length > 0 ? (
+              upcomingEvents.map((event, index) => (
+                <div key={event.slug} className={`${visibleSections.includes('upcoming-events') ? `animate-fade-in delay-${(index + 1) * 100}` : 'opacity-0'}`}>
+                  <EventCard
+                    image={event.frontmatter.image || "public/uploads/tektalentlogo.png"}
+                    title={event.frontmatter.title}
+                    date={event.frontmatter.date}
+                    summary={event.frontmatter.description}
+                    location={event.frontmatter.location}
+                    slug={event.slug}
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-12">
+                <p className="text-gray-500 dark:text-gray-400">No upcoming events at the moment</p>
+                <Button className="mt-4 bg-tekOrange hover:bg-orange-600 text-white">
+                  <Link to="/events">Past Events</Link>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -263,6 +490,87 @@ const Home = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      </section>
+      
+      {/* Testimonial Section */}
+      <section className="py-20 bg-gray-50 dark:bg-gray-800">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-800 dark:text-white">Community Voices</h2>
+            <div className="w-24 h-1 bg-tekOrange mx-auto mb-6"></div>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Hear what our community members have to say about their experience with Tek Talent Africa.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300">
+              <div className="flex flex-col h-full">
+                <div className="mb-6 text-tekOrange">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11.192 15.757c0-.88-.23-1.618-.69-2.217-.326-.412-.768-.683-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16-.95.1-1.626.41-2.223.315-.606.814-1.083 1.492-1.425.62-.32 1.266-.5 1.94-.6.74-.1 1.95-.06 2.73.2.64.22 1.27.57 1.84 1.05.58.48 1.05 1.15 1.42 2.02.94 2.21.64 5.04-.87 7.7-1.1 1.95-2.69 3.6-4.85 4.96-.55.28-1.4.66-2.76.46-1.83-.3-2.9-1.17-3.52-1.93-.52-.65-.62-1.1-.38-1.03.2.07.47.2.76.35.74.36.89.35 1.96.27.8-.06 1.73-.35 1.67-.8-.04-.36-.81-.55-1.56-.81-1.73-.6-3.3-1.6-4.54-2.95C2.42 15.57 1.8 14.35 1.44 13s-.67-2.7-.64-4.04c.05-1.84.42-3.13 1.08-4.12.8-1.08 1.9-1.9 3.03-2.24.57-.18 1.41-.26 1.98-.26.5 0 1.35.08 1.53.08.05 0 .12.3.15.04 1.18.25 2.26.76 3.15 1.56.93.83 1.37 1.8 1.37 2.9zm7.7-.3c0-.97-.23-1.78-.7-2.44-.37-.5-.83-.86-1.4-.97-.57-.13-1.1-.14-1.54-.06-.17-.9 0-1.6.28-2.17.32-.58.75-1.05 1.3-1.34.55-.32 1.1-.48 1.63-.6.81-.14 2.1-.08 2.94.15.84.23 1.47.6 2.02 1.05.56.46.95 1.08 1.2 1.8.63 1.82.27 4.2-1.1 7.06-1.32 2.76-3.05 4.86-5.23 6.32-.65.43-1.35.65-2.1.65-.37 0-.74-.05-1.1-.16-.67-.2-1.17-.47-1.6-.86-.44-.4-.7-.86-.84-1.38-.15-.52-.18-1.07-.07-1.62.1-.56.32-1.1.66-1.5.4-.5.8-.9 1.47-1.42 1.24-1 2-1.84 2.36-2.54.86-1.77.87-3.07.84-3.97zM5.95 7.76c-.06.46-.05.8.08 1.2.13.42.35.77.7 1.05.33.28.72.4 1.17.36.48-.04.87-.27 1.15-.68.27-.4.35-.9.21-1.44-.17-.5-.5-.8-.98-.92-.5-.12-.93.02-1.28.4-.35.4-.6.9-.8 1.47-.1.36-.2.4-.25.55z"/>
+                  </svg>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 flex-grow">
+                  "Being part of Tek Talent Africa has been transformative for my career. The community helped me learn new skills, connect with mentors, and find job opportunities that I wouldn't have discovered otherwise."
+                </p>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
+                    <img src="public/uploads/tektalentlogo.png" alt="Testimonial Avatar" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 dark:text-white">Sarah Ngugi</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Frontend Developer</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300">
+              <div className="flex flex-col h-full">
+                <div className="mb-6 text-tekOrange">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11.192 15.757c0-.88-.23-1.618-.69-2.217-.326-.412-.768-.683-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16-.95.1-1.626.41-2.223.315-.606.814-1.083 1.492-1.425.62-.32 1.266-.5 1.94-.6.74-.1 1.95-.06 2.73.2.64.22 1.27.57 1.84 1.05.58.48 1.05 1.15 1.42 2.02.94 2.21.64 5.04-.87 7.7-1.1 1.95-2.69 3.6-4.85 4.96-.55.28-1.4.66-2.76.46-1.83-.3-2.9-1.17-3.52-1.93-.52-.65-.62-1.1-.38-1.03.2.07.47.2.76.35.74.36.89.35 1.96.27.8-.06 1.73-.35 1.67-.8-.04-.36-.81-.55-1.56-.81-1.73-.6-3.3-1.6-4.54-2.95C2.42 15.57 1.8 14.35 1.44 13s-.67-2.7-.64-4.04c.05-1.84.42-3.13 1.08-4.12.8-1.08 1.9-1.9 3.03-2.24.57-.18 1.41-.26 1.98-.26.5 0 1.35.08 1.53.08.05 0 .12.3.15.04 1.18.25 2.26.76 3.15 1.56.93.83 1.37 1.8 1.37 2.9zm7.7-.3c0-.97-.23-1.78-.7-2.44-.37-.5-.83-.86-1.4-.97-.57-.13-1.1-.14-1.54-.06-.17-.9 0-1.6.28-2.17.32-.58.75-1.05 1.3-1.34.55-.32 1.1-.48 1.63-.6.81-.14 2.1-.08 2.94.15.84.23 1.47.6 2.02 1.05.56.46.95 1.08 1.2 1.8.63 1.82.27 4.2-1.1 7.06-1.32 2.76-3.05 4.86-5.23 6.32-.65.43-1.35.65-2.1.65-.37 0-.74-.05-1.1-.16-.67-.2-1.17-.47-1.6-.86-.44-.4-.7-.86-.84-1.38-.15-.52-.18-1.07-.07-1.62.1-.56.32-1.1.66-1.5.4-.5.8-.9 1.47-1.42 1.24-1 2-1.84 2.36-2.54.86-1.77.87-3.07.84-3.97zM5.95 7.76c-.06.46-.05.8.08 1.2.13.42.35.77.7 1.05.33.28.72.4 1.17.36.48-.04.87-.27 1.15-.68.27-.4.35-.9.21-1.44-.17-.5-.5-.8-.98-.92-.5-.12-.93.02-1.28.4-.35.4-.6.9-.8 1.47-.1.36-.2.4-.25.55z"/>
+                  </svg>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 flex-grow">
+                  "The workshops and networking events organized by Tek Talent Africa have been instrumental in helping me grow my startup. The support and resources provided by the community are unmatched."
+                </p>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
+                    <img src="public/uploads/tektalentlogo.png" alt="Testimonial Avatar" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 dark:text-white">Michael Ochieng</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Tech Entrepreneur</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300">
+              <div className="flex flex-col h-full">
+                <div className="mb-6 text-tekOrange">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11.192 15.757c0-.88-.23-1.618-.69-2.217-.326-.412-.768-.683-1.327-.812-.55-.128-1.07-.137-1.54-.028-.16-.95.1-1.626.41-2.223.315-.606.814-1.083 1.492-1.425.62-.32 1.266-.5 1.94-.6.74-.1 1.95-.06 2.73.2.64.22 1.27.57 1.84 1.05.58.48 1.05 1.15 1.42 2.02.94 2.21.64 5.04-.87 7.7-1.1 1.95-2.69 3.6-4.85 4.96-.55.28-1.4.66-2.76.46-1.83-.3-2.9-1.17-3.52-1.93-.52-.65-.62-1.1-.38-1.03.2.07.47.2.76.35.74.36.89.35 1.96.27.8-.06 1.73-.35 1.67-.8-.04-.36-.81-.55-1.56-.81-1.73-.6-3.3-1.6-4.54-2.95C2.42 15.57 1.8 14.35 1.44 13s-.67-2.7-.64-4.04c.05-1.84.42-3.13 1.08-4.12.8-1.08 1.9-1.9 3.03-2.24.57-.18 1.41-.26 1.98-.26.5 0 1.35.08 1.53.08.05 0 .12.3.15.04 1.18.25 2.26.76 3.15 1.56.93.83 1.37 1.8 1.37 2.9zm7.7-.3c0-.97-.23-1.78-.7-2.44-.37-.5-.83-.86-1.4-.97-.57-.13-1.1-.14-1.54-.06-.17-.9 0-1.6.28-2.17.32-.58.75-1.05 1.3-1.34.55-.32 1.1-.48 1.63-.6.81-.14 2.1-.08 2.94.15.84.23 1.47.6 2.02 1.05.56.46.95 1.08 1.2 1.8.63 1.82.27 4.2-1.1 7.06-1.32 2.76-3.05 4.86-5.23 6.32-.65.43-1.35.65-2.1.65-.37 0-.74-.05-1.1-.16-.67-.2-1.17-.47-1.6-.86-.44-.4-.7-.86-.84-1.38-.15-.52-.18-1.07-.07-1.62.1-.56.32-1.1.66-1.5.4-.5.8-.9 1.47-1.42 1.24-1 2-1.84 2.36-2.54.86-1.77.87-3.07.84-3.97zM5.95 7.76c-.06.46-.05.8.08 1.2.13.42.35.77.7 1.05.33.28.72.4 1.17.36.48-.04.87-.27 1.15-.68.27-.4.35-.9.21-1.44-.17-.5-.5-.8-.98-.92-.5-.12-.93.02-1.28.4-.35.4-.6.9-.8 1.47-.1.36-.2.4-.25.55z"/>
+                  </svg>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 flex-grow">
+                  "As a tech recruiter, I've found incredible talent through the Tek Talent Africa network. The community members are skilled, passionate, and driven to make an impact in the tech industry."
+                </p>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
+                    <img src="public/uploads/tektalentlogo.png" alt="Testimonial Avatar" className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 dark:text-white">Rebecca Atieno</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Tech Recruiter</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

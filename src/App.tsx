@@ -1,3 +1,4 @@
+
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,6 +9,8 @@ import Footer from "@/components/Footer";
 import Home from "@/pages/Home";
 import Blog from "@/pages/Blog";
 import BlogDetail from "@/pages/BlogDetail";
+import Events from "@/pages/Events";
+import EventDetail from "@/pages/EventDetail";
 import NotFound from "@/pages/NotFound";
 import BackToTop from "@/components/BackToTop";
 
@@ -26,6 +29,8 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogDetail />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/events/:slug" element={<EventDetail />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
