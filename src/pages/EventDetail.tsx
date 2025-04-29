@@ -7,13 +7,17 @@ import { getMarkdownFiles, isUpcomingEvent, MarkdownFile } from "@/utils/markdow
 import EventCard from "@/components/EventCard";
 import { useToast } from "@/components/ui/use-toast";
 import SkeletonCard from "@/components/SkeletonCard";
+import AnimatedSection from "@/components/AnimatedSection";
+import PageLoader from "@/components/PageLoader";
 
 const EventDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [event, setEvent] = useState<MarkdownFile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [relatedEvents, setRelatedEvents] = useState<MarkdownFile[]>([]);
+  const [registered, setRegistered] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -42,6 +46,9 @@ const EventDetail = () => {
         }
         
         setLoading(false);
+        
+        // Simulate page loading for smoother transitions
+        setTimeout(() => setPageLoading(false), 700);
       } catch (error) {
         console.error("Error fetching event:", error);
         toast({
@@ -50,6 +57,7 @@ const EventDetail = () => {
           variant: "destructive"
         });
         setLoading(false);
+        setPageLoading(false);
       }
     };
     
@@ -57,6 +65,14 @@ const EventDetail = () => {
       fetchEvent();
     }
   }, [slug, toast]);
+
+  const handleRegister = () => {
+    toast({
+      title: "Registration successful!",
+      description: "You've registered for this event. We'll send you the details shortly.",
+    });
+    setRegistered(true);
+  };
   
   const handleShare = () => {
     if (navigator.share) {
@@ -75,6 +91,10 @@ const EventDetail = () => {
       });
     }
   };
+  
+  if (pageLoading) {
+    return <PageLoader />;
+  }
   
   if (loading) {
     return (
@@ -105,27 +125,29 @@ const EventDetail = () => {
   return (
     <div className="pt-20">
       <div className="container mx-auto px-4 py-12">
-        <Button 
-          variant="outline" 
-          className="mb-6 border-tekOrange text-tekOrange dark:text-orange-300"
-          onClick={() => navigate('/events')}
-        >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Back to Events
-        </Button>
+        <AnimatedSection animation="fade-in">
+          <Button 
+            variant="outline" 
+            className="mb-6 border-tekOrange text-tekOrange dark:text-orange-300"
+            onClick={() => navigate('/events')}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Back to Events
+          </Button>
+        </AnimatedSection>
         
         <div className="max-w-4xl mx-auto">
           {/* Event Image */}
-          <div className="rounded-xl overflow-hidden mb-8 h-72 md:h-96">
+          <AnimatedSection animation="slide-up" delay={100} className="rounded-xl overflow-hidden mb-8 h-72 md:h-96 shadow-xl">
             <img 
               src={event.frontmatter.image || "public/uploads/tektalentlogo.png"} 
               alt={event.frontmatter.title} 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover hover:scale-105 transition-all duration-1000"
             />
-          </div>
+          </AnimatedSection>
           
           {/* Event Header */}
-          <div className="mb-8">
+          <AnimatedSection animation="slide-up" delay={200} className="mb-8">
             {isUpcoming && (
               <div className="inline-block px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 rounded-full text-sm font-medium mb-4">
                 Upcoming Event
@@ -163,52 +185,68 @@ const EventDetail = () => {
                 </Button>
               </div>
             </div>
-          </div>
+          </AnimatedSection>
           
           {/* Event Content */}
-          <EventCard
-            image={event.frontmatter.image || "public/uploads/tektalentlogo.png"}
-            title={event.frontmatter.title}
-            date={event.frontmatter.date}
-            summary={event.frontmatter.description}
-            location={event.frontmatter.location}
-            slug={event.slug}
-            content={event.content}
-            showContent={true}
-            className="mb-12"
-          />
+          <AnimatedSection animation="fade-in" delay={300} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <EventCard
+              image={event.frontmatter.image || "public/uploads/tektalentlogo.png"}
+              title={event.frontmatter.title}
+              date={event.frontmatter.date}
+              summary={event.frontmatter.description}
+              location={event.frontmatter.location}
+              slug={event.slug}
+              content={event.content}
+              showContent={true}
+              className="mb-0 shadow-none"
+            />
+          </AnimatedSection>
           
           {/* Call to Action */}
           {isUpcoming && (
-            <div className="bg-tekOrange/10 dark:bg-tekOrange/20 rounded-xl p-8 mb-12 text-center">
+            <AnimatedSection animation="slide-up" delay={400} className="bg-tekOrange/10 dark:bg-tekOrange/20 rounded-xl p-8 my-12 text-center shadow-lg">
               <h3 className="text-xl font-bold mb-4 text-tekOrange">Ready to join us?</h3>
               <p className="text-gray-700 dark:text-gray-300 mb-6">
                 Don't miss this opportunity to connect, learn, and grow with the Tek Talent Africa community.
               </p>
-              <Button className="bg-tekOrange hover:bg-orange-600 text-white px-8 py-6">
-                Register Now
+              <Button 
+                className={`${
+                  registered 
+                    ? "bg-green-600 hover:bg-green-700" 
+                    : "bg-tekOrange hover:bg-orange-600"
+                } text-white px-8 py-6`}
+                onClick={handleRegister}
+                disabled={registered}
+              >
+                {registered ? "You're Registered ✓" : "Register Now"}
               </Button>
-            </div>
+            </AnimatedSection>
           )}
           
           {/* Related Events */}
           {relatedEvents.length > 0 && (
-            <div className="mt-16">
+            <AnimatedSection animation="fade-in" delay={500} className="mt-16">
               <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Other Events You Might Like</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {relatedEvents.map((relatedEvent) => (
-                  <EventCard 
-                    key={relatedEvent.slug}
-                    image={relatedEvent.frontmatter.image || "public/uploads/tektalentlogo.png"}
-                    title={relatedEvent.frontmatter.title}
-                    date={relatedEvent.frontmatter.date}
-                    summary={relatedEvent.frontmatter.description}
-                    location={relatedEvent.frontmatter.location}
-                    slug={relatedEvent.slug}
-                  />
+                {relatedEvents.map((relatedEvent, index) => (
+                  <AnimatedSection 
+                    key={relatedEvent.slug} 
+                    animation="slide-up" 
+                    delay={600 + index * 100}
+                  >
+                    <EventCard 
+                      image={relatedEvent.frontmatter.image || "public/uploads/tektalentlogo.png"}
+                      title={relatedEvent.frontmatter.title}
+                      date={relatedEvent.frontmatter.date}
+                      summary={relatedEvent.frontmatter.description}
+                      location={relatedEvent.frontmatter.location}
+                      slug={relatedEvent.slug}
+                      className="transform transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                    />
+                  </AnimatedSection>
                 ))}
               </div>
-            </div>
+            </AnimatedSection>
           )}
         </div>
       </div>

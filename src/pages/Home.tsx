@@ -111,19 +111,19 @@ const Home = () => {
   }, []);
   
   const carouselImages = [
-    "public/uploads/tektalentlogo.png",
-    "public/uploads/tektalentlogo.png",
-    "public/uploads/tektalentlogo.png",
-    "public/uploads/tektalentlogo.png",
+    "public/images/tek-talent-meetup-1.jpeg",
+    "public/images/tek-talent-meetup-2.jpeg",
+    "public/images/tek-talent-meetup-3.jpeg",
+    "public/images/tek-talent-soroti.jpeg",
     "public/uploads/tektalentlogo.png",
     "public/uploads/tektalentlogo.png"
   ];
   
   const carouselImages2 = [
-    "public/uploads/tektalentlogo.png",
-    "public/uploads/tektalentlogo.png",
-    "public/uploads/tektalentlogo.png",
-    "public/uploads/tektalentlogo.png",
+    "public/images/tek-talent-soroti.jpeg",
+    "public/images/tek-talent-meetup-3.jpeg",
+    "public/images/tek-talent-meetup-2.jpeg",
+    "public/images/tek-talent-meetup-1.jpeg",
     "public/uploads/tektalentlogo.png",
     "public/uploads/tektalentlogo.png"
   ];
@@ -132,27 +132,41 @@ const Home = () => {
     <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Hero Section with Text First */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-32 pb-16">
+        {/* Background Image - Hero Section */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-tekOrange/40 dark:from-black/80 dark:to-tekOrange/30 z-10"></div>
+          <img 
+            src="public/images/tek-talent-meetup-1.jpeg" 
+            alt="Tech community background" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
         <div className="container mx-auto px-4 z-10 text-center mb-16">
           <div className="animate-fade-in max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold mb-8 text-gray-800 dark:text-white">
+            <h1 className="text-5xl md:text-7xl font-bold mb-8 text-white">
               <span className="text-tekOrange">Tek Talent</span> Africa Community
             </h1>
-            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-white mb-12 max-w-3xl mx-auto">
               A vibrant community of tech enthusiasts, developers and innovators building the future of technology in Africa.
             </p>
             <div className="flex flex-wrap gap-6 justify-center">
-              <Button className="bg-tekOrange hover:bg-orange-600 text-white text-lg px-8 py-6">
-                Join Our Community
-              </Button>
-              <Button variant="outline" className="border-tekOrange text-tekOrange hover:bg-tekOrange/10 text-lg px-8 py-6">
-                Learn More
-              </Button>
+              <Link to="/events">
+                <Button className="bg-tekOrange hover:bg-orange-600 text-white text-lg px-8 py-6">
+                  Join Our Community
+                </Button>
+              </Link>
+              <Link to="/about">
+                <Button variant="outline" className="border-tekOrange bg-white/10 text-white hover:bg-white/20 text-lg px-8 py-6">
+                  Learn More
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
         
         {/* Carousel images below the text */}
-        <div className="w-full mt-12">
+        <div className="w-full mt-12 z-10">
           {/* Top carousel - moving right */}
           <div className="carousel-container w-full mb-4">
             <div className="carousel-track carousel-track-right">
@@ -203,7 +217,7 @@ const Home = () => {
         </div>
         
         {/* Scroll down indicator */}
-        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce z-10">
           <div className="w-8 h-12 border-2 border-tekOrange rounded-full flex items-start justify-center p-1">
             <div className="w-1.5 h-3 bg-tekOrange rounded-full animate-bounce-subtle"></div>
           </div>
