@@ -54,6 +54,17 @@
     --input: 240 3.7% 15.9%;
     --ring: 24 95% 45%;
   }
+  
+  @font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    src: url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+  }
+  
+  html {
+    font-family: 'Poppins', system-ui, sans-serif;
+  }
 }
 
 * {
@@ -65,14 +76,17 @@ body {
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
+/* Text colors */
 .text-tekOrange {
   color: var(--tekOrange);
 }
 
+/* Background colors */
 .bg-tekOrange {
   background-color: var(--tekOrange);
 }
 
+/* Border colors */
 .border-tekOrange {
   border-color: var(--tekOrange);
 }
@@ -88,6 +102,45 @@ body {
 
 .hover\:border-tekOrange:hover {
   border-color: var(--tekOrange);
+}
+
+/* Custom animations */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
+
+@keyframes animation-reverse {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+.animation-reverse {
+  animation-direction: reverse;
+}
+
+/* Testimonial carousel */
+.testimonial-carousel {
+  width: 100%;
+  overflow: hidden;
+}
+
+.testimonial-track {
+  display: flex;
+  animation: slide-left 40s linear infinite;
+}
+
+.testimonial-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes slide-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-80px * 20)); }
 }
 
 /* Scrollbar styling */
@@ -130,12 +183,52 @@ html.modal-open {
   }
 }
 
-/* Custom animations */
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+/* Glass morphism effect */
+.glass {
+  @apply backdrop-blur-sm bg-white/20 dark:bg-black/20 border border-white/20 dark:border-white/10;
 }
 
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s infinite ease-in-out;
+/* Card hover effects */
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+}
+
+/* Gradient text */
+.text-gradient {
+  @apply bg-gradient-to-r from-tekOrange to-orange-500 bg-clip-text text-transparent;
+}
+
+/* Button with ripple effect */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ripple:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+.btn-ripple:focus:not(:active)::after {
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(20, 20);
+    opacity: 0;
+  }
 }

@@ -1,17 +1,20 @@
-
 import { projects } from "@/data/projects";
 
-export type Project = {
+export interface Project {
   id: string;
+  slug: string;
   title: string;
   description: string;
   status: string;
-  slug: string;
-  featured?: boolean;
   image?: string;
   tags?: string[];
-  date?: string;
-};
+  category?: string; // Added category property
+  link?: string;
+  collaborators?: string[];
+  starCount?: number;
+  startDate?: string;
+  endDate?: string;
+}
 
 export function getProjects(): Project[] {
   return projects;

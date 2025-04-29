@@ -7,6 +7,7 @@ interface AnimatedSectionProps {
   delay?: number;
   threshold?: number;
   animation?: 'fade-in' | 'slide-up' | 'slide-in-right' | 'scale-in' | 'zoom-in';
+  id?: string; // Added id prop
 }
 
 const AnimatedSection: React.FC<AnimatedSectionProps> = ({ 
@@ -14,7 +15,8 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
   className = '',
   delay = 0,
   threshold = 0.2,
-  animation = 'fade-in'
+  animation = 'fade-in',
+  id // Use the id prop
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -85,6 +87,7 @@ const AnimatedSection: React.FC<AnimatedSectionProps> = ({
   return (
     <div
       ref={sectionRef}
+      id={id} // Apply the id prop
       className={`${className} ${getAnimationClass()} ${getAnimationStyles()}`}
     >
       {children}
