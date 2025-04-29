@@ -1,46 +1,27 @@
 
-import { Link } from 'react-router-dom';
-import Button from '@/components/common/Button';
-import { motion } from 'framer-motion';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const NotFound = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b py-4 px-6">
-        <div className="max-w-7xl mx-auto">
-          <Link to="/" className="text-2xl font-brand text-primary">MindGrove</Link>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="max-w-md w-full text-center space-y-6">
+        <div className="text-tekOrange">
+          <h1 className="text-9xl font-bold">404</h1>
         </div>
-      </header>
-      
-      <main className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="mb-8"
-          >
-            <h1 className="text-9xl font-bold text-primary">404</h1>
-          </motion.div>
-          
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <h2 className="text-2xl font-bold mb-4">Page Not Found</h2>
-            <p className="text-muted-foreground mb-8">
-              The page you are looking for doesn't exist or has been moved.
-            </p>
-            
-            <div className="flex justify-center">
-              <Link to="/">
-                <Button>Back to Home</Button>
-              </Link>
-            </div>
-          </motion.div>
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-white">Page Not Found</h2>
+        <p className="text-lg text-gray-600 dark:text-gray-300">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
+        <div className="pt-6">
+          <Link to="/">
+            <Button className="bg-tekOrange hover:bg-orange-600 text-white">
+              Return to Home
+            </Button>
+          </Link>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
