@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowUp, Twitter, Linkedin, Github } from "lucide-react";
+import { ArrowUp, Twitter, Linkedin, Instagram } from "lucide-react";
 
 const Footer = () => {
   const scrollToTop = () => {
@@ -12,12 +12,12 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-1">
             <img 
-              src="public/uploads/tektalentlogo.png" 
+              src="/uploads/tektalentlogo.png" 
               alt="Tek Talent Africa" 
               className="h-14 mb-6" 
             />
             <p className="dark:text-gray-300 text-gray-700 mb-4">
-              Empowering innovation through collaboration, creativity, and community engagement.
+              Empowering innovation through collaboration, creativity and community engagement.
             </p>
           </div>
           
@@ -47,7 +47,7 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-gray-800 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="dark:text-gray-300 text-gray-700 text-sm mb-4 md:mb-0">© 2025 Tek Talent Africa. All rights reserved.</p>
+          <p className="dark:text-gray-300 text-gray-700 text-sm mb-4 md:mb-0">© 2025 Tek Talent Africa.</p>
           
           <div className="flex space-x-6">
             <Link to="#" className="text-gray-500 hover:text-tekOrange transition-colors">
@@ -60,9 +60,9 @@ const Footer = () => {
             </Link>
             
             <Link to="#" className="text-gray-500 hover:text-tekOrange transition-colors">
-              <Github size={18} />
+              <Instagram size={18} />
 
-              <span className="sr-only">GitHub</span>
+              <span className="sr-only">Instagram</span>
             </Link>
           </div>
           

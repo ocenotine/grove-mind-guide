@@ -33,70 +33,70 @@ const Home = () => {
       id: 1,
       name: "Sarah Ngugi",
       role: "Frontend Developer",
-      image: "public/uploads/tektalentlogo.png",
+      image: "/uploads/tektalentlogo.png",
       content: "Being part of Tek Talent Africa has been transformative for my career. The community helped me learn new skills, connect with mentors, and find job opportunities that I wouldn't have discovered otherwise."
     },
     {
       id: 2,
       name: "Michael Ochieng",
       role: "Tech Entrepreneur",
-      image: "public/uploads/tektalentlogo.png",
+      image: "/uploads/tektalentlogo.png",
       content: "The workshops and networking events organized by Tek Talent Africa have been instrumental in helping me grow my startup. The support and resources provided by the community are unmatched."
     },
     {
       id: 3,
       name: "Rebecca Atieno",
       role: "Tech Recruiter",
-      image: "public/uploads/tektalentlogo.png",
+      image: "/uploads/tektalentlogo.png",
       content: "As a tech recruiter, I've found incredible talent through the Tek Talent Africa network. The community members are skilled, passionate, and driven to make an impact in the tech industry."
     },
     {
       id: 4,
       name: "Daniel Mwangi",
       role: "Software Engineer",
-      image: "public/uploads/tektalentlogo.png",
+      image: "/uploads/tektalentlogo.png",
       content: "The mentorship programs offered by Tek Talent Africa have accelerated my growth as a developer. I've learned valuable technical and soft skills that have helped me advance in my career."
     },
     {
       id: 5,
       name: "Gloria Odongo",
       role: "UX Designer",
-      image: "public/uploads/tektalentlogo.png",
+      image: "/uploads/tektalentlogo.png",
       content: "Tek Talent Africa's focus on practical learning experiences has been incredibly beneficial. The design workshops and feedback sessions have helped me improve my portfolio and secure new clients."
     },
     {
       id: 6,
       name: "James Muthuri",
       role: "Data Scientist",
-      image: "public/uploads/tektalentlogo.png",
+      image: "/uploads/tektalentlogo.png",
       content: "The community projects at Tek Talent Africa pushed me to apply my skills in real-world scenarios. The collaborative environment and peer learning accelerated my growth as a data professional."
     },
     {
       id: 7,
       name: "Amina Hassan",
       role: "DevOps Engineer",
-      image: "public/uploads/tektalentlogo.png",
+      image: "/uploads/tektalentlogo.png",
       content: "Through Tek Talent Africa's specialized workshops, I gained hands-on experience with cloud technologies that were critical for my career transition to DevOps. The community support was invaluable."
     },
     {
       id: 8,
       name: "Paul Kamau",
       role: "Product Manager",
-      image: "public/uploads/tektalentlogo.png",
+      image: "/uploads/tektalentlogo.png",
       content: "The product management track at Tek Talent Africa provided me with frameworks and mentors that helped me understand the African tech ecosystem better and build products that truly solve local problems."
     },
     {
       id: 9,
       name: "Esther Wanjiku",
       role: "Mobile App Developer",
-      image: "public/uploads/tektalentlogo.png",
+      image: "/uploads/tektalentlogo.png",
       content: "Tek Talent Africa's bootcamp gave me the foundation I needed to transition into mobile development. The ongoing support from the community helped me navigate challenges in my learning journey."
     },
     {
       id: 10,
       name: "Victor Ouma",
       role: "Cybersecurity Specialist",
-      image: "public/uploads/tektalentlogo.png",
+      image: "/uploads/tektalentlogo.png",
       content: "The specialized cybersecurity meetups organized by Tek Talent Africa have helped me stay current with the latest threats and defenses. The network of professionals I've met has been invaluable for my career growth."
     }
   ];
@@ -106,16 +106,16 @@ const Home = () => {
       setLoading(false);
       
       // Animate stats counting up
-      const duration = 2000;
+      const duration = 1000; // Reduced from 2000ms to 1000ms for faster loading
       const frameDuration = 1000 / 60;
       const totalFrames = Math.round(duration / frameDuration);
       
       let frame = 0;
       const finalStats = {
-        members: 1250,
-        projects: 85,
-        events: 37,
-        posts: 120
+        members: 68,
+        projects: 0,
+        events: 2,
+        posts: 3
       };
       
       const counter = setInterval(() => {
@@ -134,7 +134,7 @@ const Home = () => {
           setStats(finalStats);
         }
       }, frameDuration);
-    }, 1500);
+    }, 800); 
     
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -184,21 +184,21 @@ const Home = () => {
   }, []);
   
   const carouselImages = [
-    "public/images/tek-talent-meetup-1.jpeg",
-    "public/images/tek-talent-meetup-2.jpeg",
-    "public/images/tek-talent-meetup-3.jpeg",
-    "public/images/tek-talent-soroti.jpeg",
-    "public/uploads/tektalentlogo.png",
-    "public/uploads/tektalentlogo.png"
+    "/images/tek-talent-meetup-1.jpeg",
+    "/images/tek-talent-meetup-2.jpeg",
+    "/images/tek-talent-meetup-3.jpeg",
+    "/images/tek-talent-soroti.jpeg",
+    "/uploads/tektalentlogo.png",
+    "/uploads/tektalentlogo.png"
   ];
   
   const carouselImages2 = [
-    "public/images/tek-talent-soroti.jpeg",
-    "public/images/tek-talent-meetup-3.jpeg",
-    "public/images/tek-talent-meetup-2.jpeg",
-    "public/images/tek-talent-meetup-1.jpeg",
-    "public/uploads/tektalentlogo.png",
-    "public/uploads/tektalentlogo.png"
+    "/images/tek-talent-soroti.jpeg",
+    "/images/tek-talent-meetup-3.jpeg",
+    "/images/tek-talent-meetup-2.jpeg",
+    "/images/tek-talent-meetup-1.jpeg",
+    "/uploads/tektalentlogo.png",
+    "/uploads/tektalentlogo.png"
   ];
     
   return (
@@ -210,8 +210,7 @@ const Home = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-tekOrange/40 dark:from-black/80 dark:to-tekOrange/30 z-10"></div>
           <div className="parallax" style={{ transform: `translateY(${typeof window !== 'undefined' ? window.scrollY * 0.3 : 0}px)` }}>
             <img 
-              src="public/images/tek-talent-meetup-1.jpeg" 
-              alt="Tech community background" 
+              // src="/images/tek-talent-meetup-1.jpeg" 
               className="w-full h-full object-cover"
             />
           </div>
@@ -243,52 +242,22 @@ const Home = () => {
         {/* Carousel images below the text */}
         <div className="w-full mt-12 z-10">
           {/* Top carousel - moving right */}
-          <div className="carousel-container w-full mb-4">
-            <div className="carousel-track carousel-track-right">
-              {carouselImages.map((image, index) => (
-                <div key={`top-${index}`} className="flex-shrink-0 w-80 h-60 p-1">
-                  <img 
-                    src={image} 
-                    alt={`Tech Event ${index}`} 
-                    className="w-full h-full object-cover rounded-lg shadow-md" 
-                  />
-                </div>
-              ))}
-              {carouselImages.map((image, index) => (
-                <div key={`top-repeat-${index}`} className="flex-shrink-0 w-80 h-60 p-1">
-                  <img 
-                    src={image} 
-                    alt={`Tech Event ${index}`} 
-                    className="w-full h-full object-cover rounded-lg shadow-md" 
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+          <ImageCarousel 
+            images={carouselImages}
+            direction="right"
+            speed={30}
+            pauseOnHover={true}
+            className="mb-4"
+          />
+        
           
           {/* Bottom carousel - moving left */}
-          <div className="carousel-container w-full">
-            <div className="carousel-track carousel-track-left">
-              {carouselImages2.map((image, index) => (
-                <div key={`bottom-${index}`} className="flex-shrink-0 w-80 h-60 p-1">
-                  <img 
-                    src={image} 
-                    alt={`Tech Community ${index}`} 
-                    className="w-full h-full object-cover rounded-lg shadow-md" 
-                  />
-                </div>
-              ))}
-              {carouselImages2.map((image, index) => (
-                <div key={`bottom-repeat-${index}`} className="flex-shrink-0 w-80 h-60 p-1">
-                  <img 
-                    src={image} 
-                    alt={`Tech Community ${index}`} 
-                    className="w-full h-full object-cover rounded-lg shadow-md" 
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+          <ImageCarousel 
+            images={carouselImages2}
+            direction="left"
+            speed={30}
+            pauseOnHover={true}
+          />
         </div>
         
         {/* Scroll down indicator */}
@@ -374,7 +343,7 @@ const Home = () => {
                 <div className="skeleton h-full w-full rounded-xl"></div>
               ) : (
                 <img 
-                  src="public/uploads/tektalentlogo.png" 
+                  src="/uploads/tektalentlogo.png" 
                   alt="Tek Talent community" 
                   className="w-full h-full object-cover"
                 />
@@ -419,7 +388,7 @@ const Home = () => {
                     date={blog.frontmatter.date}
                     author={blog.frontmatter.author || "Tek Talent Africa"}
                     summary={blog.frontmatter.description}
-                    image={blog.frontmatter.image || "public/uploads/tektalentlogo.png"}
+                    image={blog.frontmatter.image || "/uploads/tektalentlogo.png"}
                     category={blog.frontmatter.category || "General"}
                     slug={blog.slug}
                   />
@@ -465,7 +434,7 @@ const Home = () => {
               upcomingEvents.map((event, index) => (
                 <div key={event.slug} className={`${visibleSections.includes('upcoming-events') ? `animate-fade-in delay-${(index + 1) * 100}` : 'opacity-0'}`}>
                   <EventCard
-                    image={event.frontmatter.image || "public/uploads/tektalentlogo.png"}
+                    image={event.frontmatter.image || "/uploads/tektalentlogo.png"}
                     title={event.frontmatter.title}
                     date={event.frontmatter.date}
                     summary={event.frontmatter.description}
@@ -509,7 +478,7 @@ const Home = () => {
               <div className={`rounded-xl overflow-hidden shadow-lg bg-white dark:bg-gray-800 hover:shadow-xl transition-shadow duration-300 ${visibleSections.includes('features') ? 'animate-fade-in delay-100' : 'opacity-0'}`}>
                 <div className="h-48 overflow-hidden">
                   <img 
-                    src="public/uploads/tektalentlogo.png"
+                    src="/uploads/tektalentlogo.png"
                     alt="Tech Events" 
                     className="w-full h-full object-cover"
                   />
@@ -535,7 +504,7 @@ const Home = () => {
               <div className={`rounded-xl overflow-hidden shadow-lg bg-white dark:bg-gray-800 hover:shadow-xl transition-shadow duration-300 ${visibleSections.includes('features') ? 'animate-fade-in delay-200' : 'opacity-0'}`}>
                 <div className="h-48 overflow-hidden">
                   <img 
-                    src="public/uploads/tektalentlogo.png"
+                    src="/uploads/tektalentlogo.png"
                     alt="Tech Projects" 
                     className="w-full h-full object-cover"
                   />
@@ -561,7 +530,7 @@ const Home = () => {
               <div className={`rounded-xl overflow-hidden shadow-lg bg-white dark:bg-gray-800 hover:shadow-xl transition-shadow duration-300 ${visibleSections.includes('features') ? 'animate-fade-in delay-300' : 'opacity-0'}`}>
                 <div className="h-48 overflow-hidden">
                   <img 
-                    src="public/uploads/tektalentlogo.png" 
+                    src="/uploads/tektalentlogo.png" 
                     alt="Tech Blog" 
                     className="w-full h-full object-cover"
                   />

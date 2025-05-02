@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import BlogPost from "@/components/BlogPost";
 import { getMarkdownFiles, MarkdownFile } from "@/utils/markdownLoader";
-import { ArrowLeft, Calendar, User, Tag, MessageSquare, ThumbsUp, Share2 } from "lucide-react";
+import { ArrowLeft, Calendar, User, Tag, ThumbsUp, Share2 } from "lucide-react";
 import SkeletonCard from "@/components/SkeletonCard";
 import { useToast } from "@/components/ui/use-toast";
 import AnimatedSection from "@/components/AnimatedSection";
@@ -41,8 +41,8 @@ const BlogDetail = () => {
         }
         setLoading(false);
         
-        // Optimize loader timing for better UX
-        setTimeout(() => setPageLoading(false), 500);
+        // Reduce the loading time
+        setTimeout(() => setPageLoading(false), 200);
       } catch (error) {
         console.error("Error fetching blog post:", error);
         setLoading(false);
@@ -121,7 +121,7 @@ const BlogDetail = () => {
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
       
-      <div className="pt-20">
+      <div className="pt-20 bg-gray-50 dark:bg-gray-900 min-h-screen">
         <div className="container mx-auto px-4 py-16">
           <AnimatedSection animation="fade-in">
             <Button 
@@ -209,16 +209,6 @@ const BlogDetail = () => {
                       <ThumbsUp size={20} className={liked ? "fill-tekOrange" : ""} />
                       Like
                     </Button>
-                    <Button 
-                      variant="ghost"
-                      className="flex items-center gap-2"
-                      onClick={() => {
-                        document.getElementById("comments")?.scrollIntoView({ behavior: "smooth" });
-                      }}
-                    >
-                      <MessageSquare size={20} />
-                      Comment
-                    </Button>
                   </div>
                   <Button 
                     variant="ghost"
@@ -228,29 +218,6 @@ const BlogDetail = () => {
                     <Share2 size={20} />
                     Share
                   </Button>
-                </AnimatedSection>
-                
-                {/* Comments section */}
-                <AnimatedSection animation="fade-in" delay={400} id="comments" className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg mb-8">
-                  <h3 className="text-xl font-semibold mb-6 text-gray-800 dark:text-white">Comments</h3>
-                  
-                  <div className="flex items-start gap-4 mb-6">
-                    <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 overflow-hidden flex-shrink-0"></div>
-                    <div className="flex-grow">
-                      <textarea 
-                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-tekOrange dark:bg-gray-700 dark:text-white"
-                        placeholder="Write a comment..."
-                        rows={3}
-                      ></textarea>
-                      <Button className="mt-2 bg-tekOrange hover:bg-orange-600 text-white">
-                        Post Comment
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="text-center text-gray-600 dark:text-gray-400">
-                    <p>Be the first to comment on this post!</p>
-                  </div>
                 </AnimatedSection>
               </div>
               

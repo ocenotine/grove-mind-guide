@@ -8,7 +8,6 @@ import EventCard from "@/components/EventCard";
 import { useToast } from "@/components/ui/use-toast";
 import SkeletonCard from "@/components/SkeletonCard";
 import AnimatedSection from "@/components/AnimatedSection";
-import PageLoader from "@/components/PageLoader";
 import { Helmet } from "react-helmet";
 
 const EventDetail = () => {
@@ -16,7 +15,6 @@ const EventDetail = () => {
   const navigate = useNavigate();
   const [event, setEvent] = useState<MarkdownFile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [pageLoading, setPageLoading] = useState(true);
   const [relatedEvents, setRelatedEvents] = useState<MarkdownFile[]>([]);
   const [registered, setRegistered] = useState(false);
   const { toast } = useToast();
@@ -47,9 +45,6 @@ const EventDetail = () => {
         }
         
         setLoading(false);
-        
-        // Optimize loader timing for better UX
-        setTimeout(() => setPageLoading(false), 500);
       } catch (error) {
         console.error("Error fetching event:", error);
         toast({
@@ -58,7 +53,6 @@ const EventDetail = () => {
           variant: "destructive"
         });
         setLoading(false);
-        setPageLoading(false);
       }
     };
     
@@ -93,15 +87,27 @@ const EventDetail = () => {
     }
   };
   
-  if (pageLoading) {
-    return <PageLoader />;
-  }
-  
   if (loading) {
     return (
-      <div className="pt-20">
-        <div className="container mx-auto px-4 py-16">
-          <SkeletonCard className="max-w-4xl mx-auto h-[80vh]" />
+      <div className="pt-20 animate-fade-in">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center mb-6">
+            <Button 
+              variant="ghost" 
+              className="text-tekOrange"
+              disabled
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Back to Events
+            </Button>
+          </div>
+          <div className="max-w-4xl mx-auto">
+            <SkeletonCard className="h-72 mb-8 rounded-xl" />
+            <SkeletonCard className="h-10 w-1/3 mb-4" />
+            <SkeletonCard className="h-6 w-2/3 mb-2" />
+            <SkeletonCard className="h-6 w-1/2 mb-6" />
+            <SkeletonCard className="h-[400px] rounded-xl" />
+          </div>
         </div>
       </div>
     );
@@ -109,7 +115,7 @@ const EventDetail = () => {
   
   if (!event) {
     return (
-      <div className="pt-20">
+      <div className="pt-20 animate-fade-in">
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-3xl font-bold mb-4 text-gray-800 dark:text-white">Event Not Found</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-8">The event you're looking for doesn't exist or has been removed.</p>
@@ -135,9 +141,9 @@ const EventDetail = () => {
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
       
-      <div className="pt-20">
+      <div className="pt-20 bg-gray-50 dark:bg-gray-900 min-h-screen animate-fade-in">
         <div className="container mx-auto px-4 py-12">
-          <AnimatedSection animation="fade-in">
+          <AnimatedSection animation="fade-in" className="animate-fade-in">
             <Button 
               variant="outline" 
               className="mb-6 border-tekOrange text-tekOrange dark:text-orange-300"
@@ -150,20 +156,25 @@ const EventDetail = () => {
           
           <div className="max-w-4xl mx-auto">
             {/* Event Image */}
-            <AnimatedSection animation="slide-up" delay={100} className="rounded-xl overflow-hidden mb-8 h-72 md:h-96 shadow-xl">
+            <AnimatedSection animation="scale-in" delay={50} className="rounded-xl overflow-hidden mb-8 h-72 md:h-96 shadow-xl">
               <img 
                 src={event.frontmatter.image || "/uploads/tektalentlogo.png"} 
                 alt={event.frontmatter.title} 
                 className="w-full h-full object-cover hover:scale-105 transition-all duration-1000"
-                loading="lazy"
+                loading="eager" 
               />
             </AnimatedSection>
             
             {/* Event Header */}
-            <AnimatedSection animation="slide-up" delay={200} className="mb-8">
+            <AnimatedSection animation="slide-up" delay={75} className="mb-8">
               {isUpcoming && (
                 <div className="inline-block px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 rounded-full text-sm font-medium mb-4">
                   Upcoming Event
+                </div>
+              )}
+              {!isUpcoming && (
+                <div className="inline-block px-4 py-2 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-100 rounded-full text-sm font-medium mb-4">
+                  Past Event
                 </div>
               )}
               
@@ -171,7 +182,7 @@ const EventDetail = () => {
                 {event.frontmatter.title}
               </h1>
               
-              <div className="flex flex-col md:flex-row gap-6 text-gray-600 dark:text-gray-400">
+              <div className="flex flex-col md:flex-row gap-6 text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <div className="flex items-center">
                   <Calendar className="mr-2 h-5 w-5 text-tekOrange" />
                   <span>{event.frontmatter.date}</span>
@@ -192,7 +203,7 @@ const EventDetail = () => {
                 )}
                 
                 <div className="flex items-center ml-auto">
-                  <Button variant="ghost" size="sm" onClick={handleShare}>
+                  <Button variant="ghost" size="sm" onClick={handleShare} className="hover:bg-gray-100 dark:hover:bg-gray-700">
                     <Share2 className="mr-2 h-4 w-4" />
                     Share
                   </Button>
@@ -201,7 +212,7 @@ const EventDetail = () => {
             </AnimatedSection>
             
             {/* Event Content */}
-            <AnimatedSection animation="fade-in" delay={300} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <AnimatedSection animation="fade-in" delay={100} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden p-8">
               <EventCard
                 image={event.frontmatter.image || "/uploads/tektalentlogo.png"}
                 title={event.frontmatter.title}
@@ -219,9 +230,9 @@ const EventDetail = () => {
             
             {/* Call to Action */}
             {isUpcoming && (
-              <AnimatedSection animation="slide-up" delay={400} className="bg-tekOrange/10 dark:bg-tekOrange/20 rounded-xl p-8 my-12 text-center shadow-lg">
-                <h3 className="text-xl font-bold mb-4 text-tekOrange">Ready to join us?</h3>
-                <p className="text-gray-700 dark:text-gray-300 mb-6">
+              <AnimatedSection animation="slide-up" delay={150} className="bg-gradient-to-r from-tekOrange/20 to-tekOrange/10 dark:from-tekOrange/30 dark:to-tekOrange/20 rounded-xl p-8 my-12 text-center shadow-lg border border-tekOrange/20">
+                <h3 className="text-2xl font-bold mb-4 text-tekOrange">Ready to join us?</h3>
+                <p className="text-gray-700 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
                   Don't miss this opportunity to connect, learn, and grow with the Tek Talent Africa community.
                 </p>
                 <Button 
@@ -229,7 +240,7 @@ const EventDetail = () => {
                     registered 
                       ? "bg-green-600 hover:bg-green-700" 
                       : "bg-tekOrange hover:bg-orange-600"
-                  } text-white px-8 py-6`}
+                  } text-white px-8 py-6 shadow-md`}
                   onClick={handleRegister}
                   disabled={registered}
                 >
@@ -240,14 +251,14 @@ const EventDetail = () => {
             
             {/* Related Events */}
             {relatedEvents.length > 0 && (
-              <AnimatedSection animation="fade-in" delay={500} className="mt-16">
+              <AnimatedSection animation="fade-in" delay={200} className="mt-16">
                 <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Other Events You Might Like</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {relatedEvents.map((relatedEvent, index) => (
                     <AnimatedSection 
                       key={relatedEvent.slug} 
                       animation="slide-up" 
-                      delay={600 + index * 100}
+                      delay={250 + index * 50}
                     >
                       <EventCard 
                         image={relatedEvent.frontmatter.image || "/uploads/tektalentlogo.png"}

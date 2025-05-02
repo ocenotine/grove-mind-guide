@@ -195,7 +195,7 @@ The most successful developers in 2025 are those who master both the fundamental
           title: "Developer Conference 2025",
           date: "2025-07-15",
           description: "Join us for the biggest developer conference in East Africa.",
-          location: "Nairobi, Kenya",
+          location: "Kampala, Uganda",
           image: "/public/images/tek-talent-meetup-1.jpeg",
           category: "Conference",
           attendees: "500+",
@@ -238,7 +238,7 @@ Early bird tickets are available until June 1st. Secure your spot today!`
           title: "Hackathon for Good",
           date: "2025-06-02",
           description: "A 48-hour hackathon focused on solving local community challenges.",
-          location: "Lagos, Nigeria",
+          location: "Uganda",
           image: "/public/images/tek-talent-meetup-2.jpeg",
           category: "Hackathon",
           featured: true

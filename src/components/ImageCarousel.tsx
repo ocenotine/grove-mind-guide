@@ -13,9 +13,10 @@ const ImageCarousel: React.FC<CarouselProps> = ({
   images, 
   direction, 
   className, 
-  speed = 25,
+  speed = 30,
   pauseOnHover = true
 }) => {
+  // Create twice as many images to ensure smooth looping
   const duplicatedImages = [...images, ...images];
   const trackRef = useRef<HTMLDivElement>(null);
   
@@ -35,17 +36,18 @@ const ImageCarousel: React.FC<CarouselProps> = ({
   }, []);
   
   return (
-    <div className={`carousel-container ${className} overflow-hidden`}>
+    <div className={`carousel-container ${className || ''} overflow-hidden`}>
       <div 
         ref={trackRef}
         className={`carousel-track ${
-          direction === "right" 
-            ? "animate-slide-right" 
-            : "animate-slide-left"
-        } flex ${
-          pauseOnHover ? "hover:pause-animation" : ""
-        }`}
-        style={{animationDuration: `${speed}s`}}
+          direction === "right" ? "animate-slide-right" : "animate-slide-left"
+        } ${pauseOnHover ? "hover:pause-animation" : ""}`}
+        style={{
+          animationDuration: `${speed}s`,
+          animationTimingFunction: "linear",
+          animationIterationCount: "infinite",
+          animationFillMode: "forwards"
+        }}
       >
         {duplicatedImages.map((image, index) => (
           <div 

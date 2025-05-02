@@ -43,7 +43,7 @@ const NavBar = () => {
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Link to="/" className="flex items-center gap-2 group">
           <img 
-            src="public/uploads/tektalentlogo.png" 
+            src="/assets/favicon.png" 
             alt="Tek Talent Africa" 
             className="h-10 transition-transform group-hover:scale-110 duration-300" 
           />
