@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Tag, Star, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface ProjectCardProps {
+export interface ProjectCardProps {
   project: Project;
   className?: string;
 }
