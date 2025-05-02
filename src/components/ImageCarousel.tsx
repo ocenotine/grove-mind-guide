@@ -59,7 +59,6 @@ const ImageCarousel: React.FC<CarouselProps> = ({
                 src={image} 
                 alt={`Carousel image ${index + 1}`} 
                 className="rounded-lg h-40 w-64 object-cover hover:scale-110 transition-transform duration-500" 
-                loading="lazy"
               />
             </div>
           </div>

@@ -1,3 +1,4 @@
+
 import matter from 'gray-matter';
 
 export interface MarkdownFile {
@@ -522,20 +523,13 @@ export function isUpcomingEvent(date: string): boolean {
   return eventDate >= currentDate;
 }
 
-export function getPastEvents(): MarkdownFile[] {
-  const events = getStaticMarkdownFiles('events');
-  return events
-    .filter(event => !isUpcomingEvent(event.frontmatter.date))
-    .sort((a, b) => 
-      new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime()
-    );
-}
-
+// Added function to get categories from markdown files
 export function getCategories(files: MarkdownFile[]): string[] {
   const categories = files.map(file => file.frontmatter.category || 'Uncategorized');
   return ['All', ...Array.from(new Set(categories))];
 }
 
+// Added function to get tags from markdown files
 export function getTags(files: MarkdownFile[]): string[] {
   const allTags: string[] = [];
   files.forEach(file => {
@@ -546,12 +540,14 @@ export function getTags(files: MarkdownFile[]): string[] {
   return ['All', ...Array.from(new Set(allTags))];
 }
 
+// Added function to get featured items
 export function getFeaturedItems(files: MarkdownFile[], count: number = 3): MarkdownFile[] {
   const featured = files.filter(file => file.frontmatter.featured);
   const others = files.filter(file => !file.frontmatter.featured);
   return [...featured, ...others].slice(0, count);
 }
 
+// Added function for search
 export function searchFiles(files: MarkdownFile[], query: string): MarkdownFile[] {
   if (!query) return files;
   
