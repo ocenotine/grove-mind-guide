@@ -1,110 +1,41 @@
+import { Document } from '@/utils/mockData';
 
-import { Document } from "@/types/documents";
+// Map file types to icon names or paths
+const fileTypeIcons = {
+  'PDF': '/icons/pdf.svg',
+  'DOCX': '/icons/word.svg',
+  'DOC': '/icons/word.svg',
+  'TXT': '/icons/text.svg',
+  'default': '/icons/document.svg',
+};
 
-// Extract text content from HTML
-export function extractTextFromHTML(html: string): string {
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    return doc.body?.textContent || '';
-  } catch (error) {
-    console.error('Error extracting text from HTML:', error);
-    return '';
-  }
-}
+// Get the appropriate icon for a document based on its file type
+export const getDocumentThumbnail = (fileType?: string): string => {
+  if (!fileType) return fileTypeIcons.default;
+  
+  const normalizedType = fileType.toUpperCase();
+  return fileTypeIcons[normalizedType as keyof typeof fileTypeIcons] || fileTypeIcons.default;
+};
 
-// Function to sanitize HTML content
-export function sanitizeHTML(html: string): string {
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    return doc.body?.innerHTML || '';
-  } catch (error) {
-    console.error('Error sanitizing HTML:', error);
-    return '';
-  }
-}
-
-// Extract title from HTML document
-export function extractTitleFromHTML(html: string): string {
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    return doc.title || 'Untitled Document';
-  } catch (error) {
-    console.error('Error extracting title from HTML:', error);
-    return 'Untitled Document';
-  }
-}
-
-// Create a downloadable text file from document content
-export function downloadDocumentAsText(document: Document) {
+// Add downloadDocument function
+export const downloadDocument = (document: any) => {
+  // Get document content
   const content = document.content || '';
-  const title = document.title || 'document';
   
+  // Create blob with document content
   const blob = new Blob([content], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
   
-  // Use window.document instead of document to avoid the naming conflict
-  const a = window.document.createElement('a');
+  // Create download link
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
   a.href = url;
-  a.download = `${title}.txt`;
-  window.document.body.appendChild(a);
+  a.download = `${document.title || 'document'}.txt`;
+  
+  // Trigger download
+  document.body.appendChild(a);
   a.click();
   
   // Clean up
-  setTimeout(() => {
-    window.document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 100);
-}
-
-// Create a shareable link for a document
-export function createShareableLink(documentId: string): string {
-  const baseUrl = window.location.origin;
-  return `${baseUrl}/documents/${documentId}`;
-}
-
-// Format document creation date
-export function formatDocumentDate(dateString?: string): string {
-  if (!dateString) return 'Unknown date';
-  
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric'
-  });
-}
-
-// Get document thumbnail based on file type
-export function getDocumentThumbnail(fileType: string): string {
-  switch (fileType.toLowerCase()) {
-    case 'pdf':
-      return '/document-icons/pdf-icon.svg';
-    case 'doc':
-    case 'docx':
-      return '/document-icons/word-icon.svg';
-    case 'xls':
-    case 'xlsx':
-      return '/document-icons/excel-icon.svg';
-    case 'ppt':
-    case 'pptx':
-      return '/document-icons/powerpoint-icon.svg';
-    case 'txt':
-      return '/document-icons/text-icon.svg';
-    case 'csv':
-      return '/document-icons/csv-icon.svg';
-    case 'html':
-    case 'htm':
-      return '/document-icons/html-icon.svg';
-    case 'jpg':
-    case 'jpeg':
-    case 'png':
-    case 'gif':
-    case 'svg':
-      return '/document-icons/image-icon.svg';
-    default:
-      return '/document-icons/file-icon.svg';
-  }
-}
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};

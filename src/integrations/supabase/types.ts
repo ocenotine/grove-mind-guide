@@ -50,6 +50,65 @@ export type Database = {
           },
         ]
       }
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          role: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          role: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          role?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          created_at: string | null
+          id: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       document_chats: {
         Row: {
           content: string
@@ -260,6 +319,54 @@ export type Database = {
         }
         Relationships: []
       }
+      lecture_videos: {
+        Row: {
+          created_at: string | null
+          duration_seconds: number | null
+          error_message: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          has_digest: boolean | null
+          id: string
+          processed_at: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          duration_seconds?: number | null
+          error_message?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          has_digest?: boolean | null
+          id?: string
+          processed_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          duration_seconds?: number | null
+          error_message?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          has_digest?: boolean | null
+          id?: string
+          processed_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_type: string | null
@@ -313,6 +420,50 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      quizzes: {
+        Row: {
+          created_at: string | null
+          difficulty: string
+          document_id: string | null
+          id: string
+          last_taken: string | null
+          name: string
+          questions: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          difficulty: string
+          document_id?: string | null
+          id?: string
+          last_taken?: string | null
+          name: string
+          questions: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          difficulty?: string
+          document_id?: string | null
+          id?: string
+          last_taken?: string | null
+          name?: string
+          questions?: Json
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       research_groups: {
         Row: {
@@ -517,6 +668,77 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_wellbeing: {
+        Row: {
+          created_at: string | null
+          date: string
+          focus: number
+          id: string
+          notes: string | null
+          stress: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string
+          focus: number
+          id?: string
+          notes?: string | null
+          stress: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          focus?: number
+          id?: string
+          notes?: string | null
+          stress?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      video_digests: {
+        Row: {
+          created_at: string | null
+          id: string
+          key_concepts: string[] | null
+          summary: string | null
+          timestamps: Json | null
+          transcript: string | null
+          video_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          key_concepts?: string[] | null
+          summary?: string | null
+          timestamps?: Json | null
+          transcript?: string | null
+          video_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          key_concepts?: string[] | null
+          summary?: string | null
+          timestamps?: Json | null
+          transcript?: string | null
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_digests_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "lecture_videos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

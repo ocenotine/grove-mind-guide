@@ -1,261 +1,220 @@
 
-<h1 align="center" style="bold">Tek Talent Africa Community Site</h1>
+<div align="center">
+  
+# ✨ MindGrove - AI-Powered Academic Research Assistant ✨
 
-<p align="center">
-  <img src="public/uploads/tektalentlogo.png" alt="Tek Talent Africa Logo" width="200" />
-</p>
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-4.9-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
 
-<p align="center">
-  <strong>A vibrant tech community website</strong><br/>
-  Connecting individuals, sharing knowledge and driving technological advancements.
-</p>
+<h3>Transforming Academic Research & Learning Through AI</h3>
 
-<p align="center">
-  <a href="#features">✨ Features</a> •
-  <a href="#tech-stack">🧰 Tech Stack</a> •
-  <a href="#project-structure">📁 Project Structure</a> •
-  <a href="#content-management">📝 Content Management</a> •
-  <a href="#deployment">🚀 Deployment</a> •
-  <a href="#getting-started">⚙️ Getting Started</a> •
-  <a href="#contributing">🤝 Contributing</a>
-</p>
+</div>
+
+---
+
+## 📚 Table of Contents
+1. [Introduction](#-introduction)
+2. [Features](#-features)
+3. [Tech Stack](#-tech-stack)
+4. [Project Structure](#-project-structure)
+5. [Getting Started](#-getting-started)
+6. [User Types](#-user-types)
+7. [API & Integration](#-api--integration)
+8. [Deployment](#-deployment)
+
+---
+
+## 📖 Introduction
+
+MindGrove is an innovative AI-powered platform designed to enhance academic research and learning through intelligent document analysis, summarization, and knowledge extraction. It aims to transform the way researchers, students, and educators interact with academic content, making knowledge more accessible and easier to retain.
+
+**Mission**: To make academic knowledge more accessible, comprehensible, and memorable through the power of artificial intelligence.
 
 ---
 
 ## ✨ Features
 
-- 🎨 **Responsive Design** – Fully optimized for all screen sizes
-- 📱 **Mobile-First** – Prioritized experience for mobile users
-- 🌙 **Dark/Light Mode** – Auto-detect and toggle themes
-- 📝 **Blog System** – Supports categories, authors, and markdown
-- 📅 **Events Module** – Highlight past & upcoming events
-- 📊 **Project Showcase** – Display community tech projects
-- 🚀 **Performance Optimized** – Fast load times & lightweight assets
-- 💫 **Smooth Animations** – Enhancing user experience
-- ♿ **Accessibility-Focused** – Inclusive and user-friendly
-- 💡 **Project Suggestion Form** – Community-driven idea submission
-- 📲 **WhatsApp Integration** – Easy group joining via direct link
+### 🤖 AI-Powered Document Intelligence
+- **Smart Summarization**: Automatically extract key concepts, findings, and conclusions
+- **Personalized Flashcard Generation**: Convert long documents into bite-sized learning material
+- **Context-Aware AI Chat**: Ask questions about your documents and get precise answers
+
+### 📄 Document Management
+- Upload and organize PDFs, Word documents, and research papers
+- Automatic metadata extraction (authors, publication dates, keywords)
+- Search across your entire document library with semantic search
+
+### 📚 Learning Enhancement
+- Interactive flashcards with spaced repetition
+- Knowledge tracking to monitor progress
+- Citation management for academic writing
+- Gamified learning with streaks and achievements
+
+### 🏆 Student Leaderboard
+- Top students ranked by research streaks
+- Special visual recognition for top performers
+- Real-time updates to foster healthy competition
+
+### 👨‍💻 User Experience
+- Clean, modern interface with light/dark mode
+- Mobile-optimized for learning on-the-go
+- Guided onboarding for new users
+- Companion app for learning on the go
+
+### 🏫 Institutional Tools
+- Custom branding options for institutions
+- Analytics dashboard for tracking student engagement 
+- User management and reporting
+- Research collaboration portals
 
 ---
 
-## 🧰 Tech Stack
+## 🛠 Tech Stack
 
-| Tech | Description |
-|------|-------------|
-| **React** | Frontend library for UI development |
-| **TypeScript** | Typed JavaScript for better maintainability |
-| **Tailwind CSS** | Utility-first, responsive styling |
-| **Shadcn/UI** | Accessible, modern UI components |
-| **React Router** | Routing with `HashRouter` support |
-| **React Query** | Asynchronous data handling |
-| **Gray Matter** | Markdown frontmatter parsing |
-| **React Markdown** | Markdown content renderer |
-| **Lucide Icons** | Clean and beautiful SVG icons |
+MindGrove is built with modern, robust technologies to ensure performance, scalability, and developer experience:
+
+### Frontend
+- **React 18** with TypeScript for UI
+- **Tailwind CSS** and **shadcn/ui** for styling
+- **Framer Motion** for animations
+- **Tanstack Query** for data fetching and state management
+- **Recharts** for data visualization
+
+### Backend & Services
+- **Supabase** for authentication, database, and storage
+- **OpenRouter API** for document understanding and generation
+- **PDF.js** for document rendering and text extraction
+- **Edge Functions** for serverless backend operations
 
 ---
 
-## 📁 Project Structure
+## 📂 Project Structure
 
+```
+mindgrove/
+├── public/                 # Static assets
+│   ├── document-icons/     # Icons for document types
+│   ├── mindgrove.png       # App logo
+├── src/
+│   ├── components/         # Reusable UI components
+│   │   ├── animations/     # Animation components
+│   │   ├── chat/           # AI chat interface components
+│   │   ├── common/         # Shared UI elements
+│   │   ├── dashboard/      # Dashboard components
+│   │   ├── document/       # Document viewer components
+│   │   ├── flashcards/     # Flashcard components
+│   │   ├── gamification/   # Streaks and rewards components
+│   │   ├── landing/        # Landing page components
+│   │   ├── layout/         # Layout components (headers, nav, etc.)
+│   │   ├── onboarding/     # User onboarding components
+│   │   ├── profile/        # User profile components
+│   │   ├── theme/          # Theme components
+│   │   └── ui/             # shadcn/ui components
+│   ├── hooks/              # Custom React hooks
+│   ├── integrations/       # External service integrations
+│   │   └── supabase/       # Supabase client setup
+│   ├── pages/              # Application pages/routes
+│   ├── store/              # Global state management
+│   ├── types/              # TypeScript type definitions
+│   └── utils/              # Utility functions
+└── config files            # Various configuration files
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 16+ and npm/yarn
+- Supabase account for backend services
+- OpenRouter API key for AI features
+
+### Setup Steps
+
+1. Clone the repository:
 ```bash
-tektalentafrica.github.io/
-├── content/                # Markdown content
-│   ├── blog/               # Blog posts
-│   ├── events/             # Events
-│   └── projects/           # Project overviews
-├── public/
-│   └── uploads/            # Images and static assets
-└── src/
-    ├── components/         # UI components
-    │   ├── ui/             # Shadcn components
-    │   ├── BackToTop.tsx
-    │   ├── BlogPost.tsx
-    │   ├── EventCard.tsx
-    │   ├── Footer.tsx
-    │   ├── ImageCarousel.tsx
-    │   ├── MarkdownRenderer.tsx
-    │   ├── NavBar.tsx
-    │   ├── ProjectCard.tsx
-    │   ├── SkeletonCard.tsx
-    │   ├── SuggestProjectForm.tsx
-    │   └── ThemeToggle.tsx
-    ├── data/
-    │   └── projects.ts     # Project entries
-    ├── hooks/
-    │   └── use-mobile.tsx
-    ├── lib/
-    │   └── utils.ts
-    ├── pages/
-    │   ├── Home.tsx
-    │   ├── Blog.tsx
-    │   ├── BlogDetail.tsx
-    │   ├── Events.tsx
-    │   ├── EventDetail.tsx
-    │   ├── Projects.tsx
-    │   ├── ProjectDetail.tsx
-    │   └── NotFound.tsx
-    ├── utils/
-    │   ├── markdownLoader.ts
-    │   └── projectLoader.ts
-    ├── App.css
-    ├── App.tsx
-    ├── index.css
-    └── main.tsx
+git clone https://github.com/yourusername/mindgrove.git
+cd mindgrove
 ```
 
----
-
-## 📝 Content Management
-
-All content is markdown-based or managed through static `.ts` files:
-
-### 📚 Blog Posts
-
-Markdown location: `content/blog/*.md`
-
-```yaml
----
-title: "Post Title"
-date: "YYYY-MM-DD"
-slug: "post-slug"
-description: "Short summary"
-author: "Author Name"
-image: "url-to-image"
-category: "Tech/Events/Other"
----
-```
-
-### 📆 Events
-
-Markdown location: `content/events/*.md`
-
-```yaml
----
-title: "Event Title"
-date: "YYYY-MM-DD"
-slug: "event-slug"
-description: "Event summary"
-image: "url-to-image"
-location: "City, Country"
----
-```
-
-### 🔧 Projects
-
-Managed in `src/data/projects.ts`:
-
-```ts
-{
-  id: "unique-id",
-  slug: "project-slug",
-  title: "Project Name",
-  description: "Short description",
-  status: "In Progress / Completed",
-  image: "url-to-image",
-  featured: true,
-  tags: ["React", "API"],
-  date: "YYYY-MM-DD"
-}
-```
-
----
-
-## 🚀 Deployment
-
-The site is designed for **GitHub Pages** using `HashRouter` to handle routing.
-
-### 🛠 Build & Deploy Steps
-
-1. **Build the Project**:
-   ```bash
-   npm run build
-   ```
-
-2. **Deploy to GitHub Pages** manually or via Actions.
-
-### ⚙️ GitHub Actions Workflow
-
-`.github/workflows/deploy.yml`
-
-```yaml
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: dist
-          branch: gh-pages
-```
-
----
-
-## ⚙️ Getting Started
-
-### 🔧 Prerequisites
-
-- Node.js (v18+)
-- npm or Yarn
-
-### 🖥 Installation
-
+2. Install dependencies:
 ```bash
-# Clone the repo
-git clone https://github.com/TekTalentAfrica/tektalentafrica.github.io.git
-cd tektalentafrica.github.io
-
-# Install dependencies
 npm install
 # or
-yarn install
+yarn
+```
 
-# Start development server
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your API keys and configuration
+```
+
+4. Start the development server:
+```bash
 npm run dev
 # or
 yarn dev
 ```
 
-Open your browser at: [http://localhost:8080](http://localhost:8080)
+5. Build for production:
+```bash
+npm run build
+# or
+yarn build
+```
 
 ---
 
-## 🤝 Contributing
+## 👥 User Types
 
-We 💖 contributions!
+### Student Users
+- Document uploading and management
+- AI-powered summaries and flashcards
+- Learning streaks and gamification
+- Mobile companion app
+- Participation in leaderboards
 
-1. Fork the repository
-2. Create your feature branch:
-   ```bash
-   git checkout -b feature/awesome-feature
-   ```
-3. Commit your changes:
-   ```bash
-   git commit -m "Add awesome feature"
-   ```
-4. Push to the branch:
-   ```bash
-   git push origin feature/awesome-feature
-   ```
-5. Create a Pull Request and let's grow together!
+### Institutional Users
+- All student features
+- Advanced analytics dashboard
+- Research collaboration portals
+- Custom branding options
+- Automated report generation
 
 ---
+
+## 🔌 API & Integration
+
+MindGrove integrates with several powerful APIs:
+
+### Supabase
+- Authentication, user management, and document storage
+- Database for user profiles, document metadata, and flashcards
+- Edge functions for serverless operations
+
+### OpenRouter API
+- Used for document summarization, flashcard generation, and contextual chat
+
+### PDF Processing
+- PDF.js for client-side text extraction
+- OCR capabilities for scanned documents
+
+---
+
+## 🌐 Deployment
+
+MindGrove is deployed using:
+
+- Frontend: Vercel/Netlify for static site hosting
+- Backend: Supabase Cloud for database, auth, and storage
+- Edge Functions: Supabase Edge Functions for serverless backend logic
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

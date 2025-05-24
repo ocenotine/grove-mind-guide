@@ -1,42 +1,46 @@
 
-import React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserProfile } from "@/types/user";
+import React from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserWithMetadata } from '@/store/authStore';
 
 interface ProfileAvatarProps {
-  profile: UserProfile;
-  size?: "sm" | "md" | "lg" | "xl";
+  user?: UserWithMetadata | null;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-const ProfileAvatar: React.FC<ProfileAvatarProps> = ({ profile, size = "md" }) => {
-  const sizeClass = {
-    sm: "h-8 w-8",
-    md: "h-10 w-10",
-    lg: "h-16 w-16",
-    xl: "h-24 w-24",
+const ProfileAvatar: React.FC<ProfileAvatarProps> = ({ user, size = 'md' }) => {
+  const getInitials = () => {
+    if (!user) return '?';
+    
+    if (user.user_metadata?.name) {
+      return user.user_metadata.name.split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase();
+    }
+    
+    return user.email ? user.email[0].toUpperCase() : '?';
   };
-
-  // Get initials from name
-  const getInitials = (name?: string) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .substring(0, 2);
+  
+  const getSizeClass = () => {
+    switch (size) {
+      case 'sm': return 'h-8 w-8';
+      case 'lg': return 'h-16 w-16';
+      case 'xl': return 'h-24 w-24';
+      default: return 'h-12 w-12';
+    }
   };
-
+  
+  // Safely access avatar_url from user metadata if it exists
+  const avatarUrl = user?.user_metadata && 'avatar_url' in user.user_metadata 
+    ? (user.user_metadata as any).avatar_url 
+    : '';
+  
   return (
-    <Avatar className={`${sizeClass[size]} border-2 border-white bg-gradient-to-br from-blue-400 to-purple-600`}>
-      {profile.avatar_url && (
-        <AvatarImage 
-          src={profile.avatar_url} 
-          alt={profile.name || "User"} 
-        />
-      )}
-      <AvatarFallback className="text-white font-medium">
-        {getInitials(profile.name)}
+    <Avatar className={`${getSizeClass()} border-2 border-primary/10`}>
+      <AvatarImage src={avatarUrl} />
+      <AvatarFallback className="bg-primary/10 text-primary">
+        {getInitials()}
       </AvatarFallback>
     </Avatar>
   );
